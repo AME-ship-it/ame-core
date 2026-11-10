@@ -1,0 +1,7 @@
+# Sensitive changes request review from the official repository owner.
+/contracts/ @AME-ship-it
+/frontend/components/Lending.tsx @AME-ship-it
+/frontend/lib/lending* @AME-ship-it
+/frontend/lib/web3.ts @AME-ship-it
+/frontend/lib/chains.ts @AME-ship-it
+/.github/ @AME-ship-it

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 2,
+  "status": "deployed-tested-active-test-only",
+  "chainId": 46630,
+  "administrator": "0x1641E156Ed5578ec1Bd4a25AD8A15Aba916A88B7",
+  "agentRegistry": "0xAC214EeDeA040f247962C87eF779dEBdBc86727c",
+  "testAssetsOnly": true,
+  "mockPrices": true,
+  "contracts": {
+    "loanToken": {
+      "address": "0x0eDdB99E363F284F416094B2E6d55f3C358aC1Ba",
+      "transactionHash": "0xa77b93971fc3f1b553b9963967a8fc366ca6241006196c5081d1570adb133547",
+      "blockNumber": "147549079",
+      "runtimeCodeHash": "0xfc9d83ce3b1440eaff4bf16e7bd2fa16978ab224c008741b4991bc22a8b8bfc3"
+    },
+    "collateralToken": {
+      "address": "0x28c1f34A95CE480179fAa38Df6bd510e93c28206",
+      "transactionHash": "0x7cae8d6acea431b34f541d7d1b45b28d2ba55f103199dc099237fe3706473136",
+      "blockNumber": "147554085",
+      "runtimeCodeHash": "0x12b669e50943fba52ab4840359fc2339eecd43e1726a151fa5e63e5d9d803911"
+    },
+    "oracle": {
+      "address": "0xdCD8E459b35E985fBeCd6C73C1D98408F6d66B04",
+      "transactionHash": "0xff965751c605c0c23dc5511310e4e072ca2286f18162c1c39caff3cf6f84bc4d",
+      "blockNumber": "147554134",
+      "runtimeCodeHash": "0x8a2b6d7344d1b6ccaaf1202711a54170117d07bdf73a3a143ac43679118051d5"
+    },
+    "market": {
+      "address": "0x3A0EeC960E3dD696DC5AEbB04f92CDcfBf308dF6",
+      "transactionHash": "0x344c98a5449a10413a65b4c26c307ce7816f4420562f24fdfa5db075a075dcff",
+      "blockNumber": "147554173",
+      "runtimeCodeHash": "0xd1c48bdd357ecda98d68a5394e77ba302c45292cee4d0ee0ba23971a56d21335"
+    }
+  },
+  "borrowingPaused": false,
+  "riskParameters": {
+    "ltvBps": "5000",
+    "liquidationBps": "7000",
+    "bonusBps": "500",
+    "aprBps": "500",
+    "borrowCap": "1000000000000",
+    "minimumBorrow": "10000000",
+    "maxPriceAgeSeconds": "3600",
+    "loanTermSeconds": "2592000",
+    "faucetIntervalSeconds": 86400,
+    "loanClaim": "1000 tUSD",
+    "collateralClaim": "100 tCOL",
+    "mockLoanPrice": "1 synthetic unit",
+    "mockCollateralPrice": "2 synthetic units"
+  }
+}

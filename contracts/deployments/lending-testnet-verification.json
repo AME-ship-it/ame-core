@@ -1,0 +1,178 @@
+{
+  "status": "PASS",
+  "chainId": 46630,
+  "market": "0x3A0EeC960E3dD696DC5AEbB04f92CDcfBf308dF6",
+  "administrator": "0x1641e156ed5578ec1bd4a25ad8a15aba916a88b7",
+  "lender": "0xf6Ab23AA1E2CFcdb0F13905fF4b9361ACdFe931b",
+  "borrower": "0x3914106847B640d73826F1F86bA2762e0858260F",
+  "metaMaskQA": "NOT VERIFIED",
+  "transactions": [
+    {
+      "label": "pause before validation",
+      "hash": "0xdfa60510543500a22199883bac264dfe96226f42cc0ba3f3eec7b205280eec33",
+      "state": "confirmed",
+      "blockNumber": "147554407"
+    },
+    {
+      "label": "fund disposable test wallet",
+      "hash": "0x89ef0192e8aded0334d3e31dc2f8af5a160f2c26fe94ed3c3978c477802a682e",
+      "state": "confirmed",
+      "blockNumber": "147554454"
+    },
+    {
+      "label": "fund disposable test wallet",
+      "hash": "0x289b63ba6178bfdc3997d1821e90ef6738090caef6310d8616d86f43bd74e6cc",
+      "state": "confirmed",
+      "blockNumber": "147554500"
+    },
+    {
+      "label": "lender faucet claim",
+      "hash": "0xeefbd8c75202aa0d93aa33e8414d464f17b3fbb469194d46032cc80dbdf2b537",
+      "state": "confirmed",
+      "blockNumber": "147554550"
+    },
+    {
+      "label": "borrower loan faucet claim",
+      "hash": "0x876ab924a645dc6a6a91078b685293085f0048fa37b31fe0e8319493ac4ec993",
+      "state": "confirmed",
+      "blockNumber": "147554597"
+    },
+    {
+      "label": "borrower collateral faucet claim",
+      "hash": "0xedfd0bf857fde0d11e8fcaa2d72ddd309ee6a3a98f5e5e1f38d3362e395ac43e",
+      "state": "confirmed",
+      "blockNumber": "147554653"
+    },
+    {
+      "label": "approve supply",
+      "hash": "0x2c395ef85ccae6ab07359051e6088d7928c18dab704b0139a09178422aa3eb8e",
+      "state": "confirmed",
+      "blockNumber": "147554716"
+    },
+    {
+      "label": "supply liquidity",
+      "hash": "0xc22b1fb65f7aa81af0d1d2038a8e21ccbbef71a6636aeae5a8d3f0f859ca88de",
+      "state": "confirmed",
+      "blockNumber": "147554761"
+    },
+    {
+      "label": "mint disposable tester identity",
+      "hash": "0x1af0ff2b8b618741d1735a842a62eda7c8e252db5d56d64086972ea07b244461",
+      "state": "confirmed",
+      "blockNumber": "147554816"
+    },
+    {
+      "label": "open borrower position",
+      "hash": "0x212bc3a6091a76800dfd12474dbe0c8abb801a1d8651ca1c558c7c87262ebc63",
+      "state": "confirmed",
+      "blockNumber": "147554861"
+    },
+    {
+      "label": "approve collateral",
+      "hash": "0x95bab2f74f66d6569e61c8e07a8523022d683354d22d2b99bac9ebc25d0d2c4f",
+      "state": "confirmed",
+      "blockNumber": "147554903"
+    },
+    {
+      "label": "deposit collateral",
+      "hash": "0x126c5d05afd0fc5aad70b2ab19c975886642eb359dd75a7097154234f56c83ff",
+      "state": "confirmed",
+      "blockNumber": "147554950"
+    },
+    {
+      "label": "refresh fixed mock quotes",
+      "hash": "0x22ffc30a192dec3c0a759b541f080d0faf54bb97e77896b525508f3978658cee",
+      "state": "confirmed",
+      "blockNumber": "147555008"
+    },
+    {
+      "label": "enable controlled testnet borrowing",
+      "hash": "0x803a7e842e8522688b41ad459010177568619bc856557e28f7cbdbabc512f251",
+      "state": "confirmed",
+      "blockNumber": "147555053"
+    },
+    {
+      "label": "small controlled borrow",
+      "hash": "0x01f2cfe3e866f037a8982e3519fe48655f78ef2e1ad44a5d72b3468aaed40095",
+      "state": "confirmed",
+      "blockNumber": "147555127"
+    },
+    {
+      "label": "pause with active debt",
+      "hash": "0x46c6f659bd6e8d195acb0b4e0284ae08f26fbda19bb7e1fface512110409f816",
+      "state": "confirmed",
+      "blockNumber": "147649521"
+    },
+    {
+      "label": "approve repayment",
+      "hash": "0x4ee376b4f7410806d115d477e40a426a830e8121f6def0dbd50792aad7eecb38",
+      "state": "confirmed",
+      "blockNumber": "147649576"
+    },
+    {
+      "label": "repay while paused",
+      "hash": "0x8c3bf64f36c4600dd0cc55186e23a2427f7f31a8f237ea0acd0e6618233ca345",
+      "state": "confirmed",
+      "blockNumber": "147649629"
+    },
+    {
+      "label": "release collateral",
+      "hash": "0x4f589d8abcc1fa412be9e5fb14b672423bd437dc3c0833168c86831072170815",
+      "state": "confirmed",
+      "blockNumber": "147649689"
+    },
+    {
+      "label": "withdraw supplied liquidity",
+      "hash": "0xa443bdfea5aafb64b47cc220535888fffc4e1e30e608716d6a7207cee0dbc42e",
+      "state": "confirmed",
+      "blockNumber": "147649723"
+    },
+    {
+      "label": "administrator test faucet claim",
+      "hash": "0x00c6d5e27c1f5b0657375dc53c3b13244db91395d114d50854a070432522a961",
+      "state": "confirmed",
+      "blockNumber": "147649760"
+    },
+    {
+      "label": "approve public test liquidity",
+      "hash": "0xf80cc3fceebea65052e6253ac25a0d4ae1a4f0d0c281fa1832d84dd20fa021da",
+      "state": "confirmed",
+      "blockNumber": "147649791"
+    },
+    {
+      "label": "seed public test liquidity",
+      "hash": "0xec41186eb8c441960dcc31044841fd9441373f7352253da5aec46319545f355e",
+      "state": "confirmed",
+      "blockNumber": "147649826"
+    },
+    {
+      "label": "refresh public mock quotes",
+      "hash": "0x5ea43b63b9f01b758c98ddef7bacf8466661e50748adb50861dc2b4520581635",
+      "state": "confirmed",
+      "blockNumber": "147649871"
+    },
+    {
+      "label": "enable validated public testnet borrowing",
+      "hash": "0x4be9e456dc9b01e9af7698c806454871984dd7c399cf96035c96d9af9e286847",
+      "state": "confirmed",
+      "blockNumber": "147649917"
+    }
+  ],
+  "checks": {
+    "faucet": "PASS: balances and same-wallet cooldown verified",
+    "supply": "PASS",
+    "collateral": "PASS",
+    "pausedBorrow": "PASS",
+    "authorizationAndLtv": "PASS",
+    "borrow": "PASS",
+    "withdrawalSolvency": "PASS",
+    "repay": "PASS",
+    "reputation": "PASS: verified completion; instant repayment earns zero reputation",
+    "withdraw": "PASS"
+  },
+  "agentId": "1",
+  "positionId": "1",
+  "borrowingPaused": false,
+  "finalCash": "200000196",
+  "finalPrincipal": "0"
+}

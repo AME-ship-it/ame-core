@@ -1,0 +1,4 @@
+.links a{position:relative}
+.links a[aria-current]{color:var(--green)}
+.links a[aria-current]::after{content:"";position:absolute;left:0;bottom:3px;width:16px;height:1px;background:currentColor;opacity:.65;pointer-events:none}
+@media(max-width:720px){nav.links{gap:clamp(12px,4vw,30px)}}

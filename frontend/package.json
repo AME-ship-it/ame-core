@@ -1,0 +1,41 @@
+{
+  "name": "ame",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack --hostname 127.0.0.1",
+    "build": "next build --webpack",
+    "start": "next start --hostname 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "test": "node --env-file-if-exists=.env.development.local --experimental-strip-types --test tests/*.test.mjs",
+    "contracts:sync": "node scripts/sync-contracts.mjs",
+    "lending:sync": "node scripts/sync-lending.mjs",
+    "lending:sync:local": "node scripts/sync-lending.mjs --local",
+    "test:flow": "node --env-file-if-exists=.env.development.local --experimental-strip-types --test tests/deploy-flow.test.mjs",
+    "test:routes": "node --test tests-production/*.mjs",
+    "env:testnet": "node scripts/export-testnet-env.mjs",
+    "build:testnet": "node scripts/build-testnet.mjs",
+    "test:testnet": "node --use-system-ca --env-file=.env.vercel-preview --experimental-strip-types --test tests-public/testnet.mjs"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.104.3",
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "viem": "^2.57.7",
+    "wagmi": "^3.7.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.9.0"
+  },
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  }
+}
+

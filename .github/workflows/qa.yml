@@ -1,0 +1,76 @@
+name: QA
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  qa:
+    name: QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            contracts/package-lock.json
+            frontend/package-lock.json
+      - name: Install locked dependencies
+        run: |
+          npm --prefix contracts ci
+          npm --prefix frontend ci
+      - name: Compile and test contracts
+        run: |
+          npm --prefix contracts run compile
+          npm --prefix contracts run typecheck
+          npm --prefix contracts test
+      - name: Local frontend integration tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm --prefix contracts run node > "$RUNNER_TEMP/ame-hardhat.log" 2>&1 &
+          node_pid=$!
+          trap 'kill "$node_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 60); do
+            if curl --silent --fail -H 'content-type: application/json' --data '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}' http://127.0.0.1:8545 | grep -q '0x7a69'; then ready=1; break; fi
+            sleep 1
+          done
+          test "$ready" -eq 1
+          npm --prefix contracts run deploy:local
+          npm --prefix contracts run lending:local
+          npm --prefix frontend run contracts:sync
+          npm --prefix frontend run lending:sync:local
+          npm --prefix frontend run typecheck
+          npm --prefix frontend test
+      - name: Configured production build
+        run: |
+          npm --prefix frontend run env:testnet
+          npm --prefix frontend run build:testnet
+      - name: Production routes and runtime isolation
+        shell: bash
+        env:
+          AME_QA_ORIGIN: http://127.0.0.1:3108
+          AME_QA_CONTRACTS_CONFIGURED: '1'
+          AME_QA_LENDING_CONFIGURED: '1'
+        run: |
+          set -euo pipefail
+          (cd frontend && node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3108) > "$RUNNER_TEMP/ame-next.log" 2>&1 &
+          next_pid=$!
+          trap 'kill "$next_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 60); do
+            if curl --silent --fail http://127.0.0.1:3108/lending > /dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          test "$ready" -eq 1
+          npm --prefix frontend run test:routes

@@ -1,0 +1,27 @@
+{
+  "network": "robinhood-testnet",
+  "chainId": 46630,
+  "deployer": "0x1641E156Ed5578ec1Bd4a25AD8A15Aba916A88B7",
+  "deployerBalanceETH": "0.0099813205",
+  "checks": [
+    {
+      "contract": "AMEAgent",
+      "address": "0xAC214EeDeA040f247962C87eF779dEBdBc86727c",
+      "bytecodeBytes": 5265,
+      "block": "136170413",
+      "transactionHash": "0x9b12d335ceff71cd3ed1120b3e8d0a5724cf3901b2076c369380e0ece01d55fc"
+    },
+    {
+      "contract": "AMEReceipt",
+      "address": "0x66dEb73680BD9B3FEEF932ec683B31492C11B94e",
+      "bytecodeBytes": 2305,
+      "block": "136170473",
+      "transactionHash": "0x08a892e536db388d1e0d83108cd491bb71f00ee3f45ec2c277ca70e8fbffe1fa"
+    },
+    {
+      "deployerAgentIds": []
+    }
+  ],
+  "extraPublicMintSubmitted": false,
+  "metaMaskQA": "NOT VERIFIED"
+}

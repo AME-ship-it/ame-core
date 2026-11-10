@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "status": "deployed",
+  "network": "robinhood-testnet",
+  "chainId": 46630,
+  "deployer": "0x1641E156Ed5578ec1Bd4a25AD8A15Aba916A88B7",
+  "contracts": {
+    "AMEAgent": {
+      "address": "0xAC214EeDeA040f247962C87eF779dEBdBc86727c",
+      "transactionHash": "0x9b12d335ceff71cd3ed1120b3e8d0a5724cf3901b2076c369380e0ece01d55fc",
+      "blockNumber": "136170413",
+      "runtimeCodeHash": "0x00fed62d536de73f266a6a4f6a9be09141c481aa745a33ad8034829ae71ad5f6"
+    },
+    "AMEReceipt": {
+      "address": "0x66dEb73680BD9B3FEEF932ec683B31492C11B94e",
+      "transactionHash": "0x08a892e536db388d1e0d83108cd491bb71f00ee3f45ec2c277ca70e8fbffe1fa",
+      "blockNumber": "136170473",
+      "runtimeCodeHash": "0xcd2c8847fee40ca8120d816febc5ad4b5ba9ccbf30b15e7246849f13175fb23a"
+    }
+  }
+}

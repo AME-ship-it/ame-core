@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import { it } from 'node:test';
+import hre from 'hardhat';
+const connection = await hre.network.create();
+const {viem} = connection;
+const [alice,bob] = await viem.getWalletClients();
+it('caps claims to a fixed amount per wallet per day, with no arbitrary mint function', async () => {
+  const t = await viem.deployContract('AMEPublicTestToken',['AME TEST USD - NO VALUE','tUSD',6,1000_000000n]);
+  await t.write.claim();
+  assert.equal(await t.read.balanceOf([alice.account.address]),1000_000000n);
+  await assert.rejects(t.write.claim(), /ClaimUnavailable/);
+  await t.write.claim({account:bob.account});
+  assert.equal(await t.read.totalSupply(),2000_000000n);
+  assert.equal(t.abi.some(x=>x.type==='function' && String(x.name)==='mint'),false);
+  await connection.provider.request({method:'evm_increaseTime',params:[86400]});
+  await connection.provider.request({method:'evm_mine',params:[]});
+  await t.write.claim();
+  assert.equal(await t.read.balanceOf([alice.account.address]),2000_000000n);
+});
+it('allows timestamp refresh without price manipulation, and preserves stale-oracle borrowing controls',async()=>{
+  const loan=await viem.deployContract('AMEPublicTestToken',['TEST USD','tUSD',6,1000_000000n]);
+  const col=await viem.deployContract('AMEPublicTestToken',['TEST COL','tCOL',18,100n*10n**18n]);
+  const oracle=await viem.deployContract('AMEPublicTestOracle',[loan.address,col.address]);
+  const agent=await viem.deployContract('AMEAgent');
+  const market=await viem.deployContract('AMELending',[loan.address,col.address,agent.address,oracle.address,alice.account.address]);
+  await loan.write.claim(); await col.write.claim();
+  await loan.write.approve([market.address,1000_000000n]); await market.write.deposit([1000_000000n,alice.account.address]);
+  await agent.write.mint([alice.account.address,'data:application/json,test']); await market.write.openPosition([1n]);
+  await col.write.approve([market.address,100n*10n**18n]); await market.write.addCollateral([1n,100n*10n**18n]);
+  await market.write.setBorrowingPaused([false]);
+  await connection.provider.request({method:'evm_increaseTime',params:[3601]}); await connection.provider.request({method:'evm_mine',params:[]});
+  await assert.rejects(market.write.borrow([1n,10_000000n]),/InvalidPrice/);
+  await oracle.write.refresh({account:bob.account});
+  assert.equal((await oracle.read.price([col.address]))[0],2n*10n**18n);
+  await market.write.borrow([1n,10_000000n]);
+  assert.equal(await market.read.totalPrincipal(),10_000000n);
+});

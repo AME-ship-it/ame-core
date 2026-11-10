@@ -1,0 +1,33 @@
+{
+  "name": "ame-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "typecheck": "tsc --noEmit",
+    "node": "hardhat node --hostname 127.0.0.1",
+    "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
+    "lending:local": "hardhat run scripts/lending-local.ts --network localhost",
+    "lending:testnet": "node --use-system-ca --env-file-if-exists=.env node_modules/hardhat/dist/src/cli.js run scripts/lending-testnet.ts --network robinhoodTestnet",
+    "deploy:testnet": "node --use-system-ca --env-file-if-exists=.env node_modules/hardhat/dist/src/cli.js run scripts/deploy-testnet.ts --network robinhoodTestnet",
+    "preflight:testnet": "node --use-system-ca --env-file-if-exists=.env node_modules/hardhat/dist/src/cli.js run scripts/testnet-preflight.ts --network robinhoodTestnet"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-node-test-runner": "^3.1.0",
+    "@nomicfoundation/hardhat-viem": "^3.0.9",
+    "@types/node": "^26.6.5",
+    "hardhat": "^3.19.0",
+    "solc": "0.8.28",
+    "typescript": "^7.0.2",
+    "viem": "^2.57.7"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "5.6.1"
+  }
+}
+
