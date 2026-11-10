@@ -4,7 +4,7 @@
 
 AME Protocol develops onchain identity, financial reputation and lending infrastructure for agents on Robinhood Chain. This repository contains the existing AME application, Solidity contracts, tests and deployment tooling.
 
-[Application](https://ame-rosy.vercel.app) · [Lending](https://ame-rosy.vercel.app/lending) · [Official GitHub](https://github.com/AME-ship-it/ame-protocol) · [Official X](https://x.com/ame_runtime)
+[Application](https://ame-rosy.vercel.app) · [Lending](https://ame-rosy.vercel.app/lending) · [Official GitHub](https://github.com/AME-ship-it/ame-core) · [Official X](https://x.com/ame_runtime)
 
 ## Current status
 

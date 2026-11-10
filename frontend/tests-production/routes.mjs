@@ -13,6 +13,7 @@ for (const [route, text] of cases) {
     const response = await fetch(`${origin}${route}`);
     assert.equal(response.status, 200);
     const html = await response.text();
+    assert.ok(!html.includes('https://github.com/AME-ship-it/ame-protocol'), 'Public pages must not link to the obsolete AME repository');
     assert.ok(html.includes(text));
     assert.equal(html.includes('CONTRACT NOT CONFIGURED'), !configured);
     if (route !== '/') assert.ok(html.includes('Robinhood Chain Testnet'));
@@ -58,7 +59,7 @@ for (const route of ['/', '/lending']) {
     const nav = html.match(/<nav\b[^>]*aria-label="Main navigation"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
     assert.ok(nav, 'Shared navigation must exist');
     const links = [...nav.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
-    assert.deepEqual(links.map(link => link[1].match(/href="([^"]+)"/)?.[1]), ['/lending', '/#nfts', '/#protocol', '/#docs', 'https://x.com/ame_runtime', 'https://github.com/AME-ship-it/ame-protocol']);
+    assert.deepEqual(links.map(link => link[1].match(/href="([^"]+)"/)?.[1]), ['/lending', '/#nfts', '/#protocol', '/#docs', 'https://x.com/ame_runtime', 'https://github.com/AME-ship-it/ame-core']);
     assert.equal(links[0][1].includes('aria-current="page"'), route === '/lending');
     assert.match(links[4][1], /target="_blank"/); assert.match(links[4][1], /rel="noopener noreferrer"/);
     assert.match(links[5][1], /target="_blank"/); assert.match(links[5][1], /rel="noopener noreferrer"/);

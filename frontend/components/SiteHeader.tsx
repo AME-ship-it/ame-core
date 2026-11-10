@@ -25,7 +25,7 @@ export function SiteHeader() {
       <Link href="/#protocol" aria-current={sectionActive('#protocol')} onClick={() => setActiveHash('#protocol')}>Protocol</Link>
       <Link href="/#docs" aria-current={sectionActive('#docs')} onClick={() => setActiveHash('#docs')}>Docs</Link>
       <a href={X_URL} target="_blank" rel="noopener noreferrer" aria-label="AME on X (opens in a new tab)" title="AME on X">X <span aria-hidden="true">↗</span></a>
-      <a href="https://github.com/AME-ship-it/ame-protocol" target="_blank" rel="noopener noreferrer" aria-label="AME on GitHub (opens in a new tab)" title="AME source code">GitHub <span aria-hidden="true">↗</span></a>
+      <a href="https://github.com/AME-ship-it/ame-core" target="_blank" rel="noopener noreferrer" aria-label="AME on GitHub (opens in a new tab)" title="AME source code">GitHub <span aria-hidden="true">↗</span></a>
     </nav>
     <WalletControls />
   </header>;
