@@ -84,3 +84,25 @@ for(const [route,markers] of [
   for(const marker of markers)assert.ok(html.includes(marker),marker);
   assert.ok(!html.includes('data-reveal'),'Documentation must be visible without reveal observers');
 });
+
+test('canonical docs expose working, unique contents anchors and preserve visual foundations',async()=>{
+  const r=await fetch(origin+'/docs');assert.equal(r.status,200);const html=await r.text();
+  const toc=html.match(/<nav\b[^>]*aria-label="Documentation contents"[^>]*>([\s\S]*?)<\/nav>/)?.[1];assert.ok(toc);
+  for(const id of ['introduction','identity','receipts','memory','reputation','credit','lending','ame-access','state-model','architecture','current-status']){
+    assert.ok(toc.includes(`href="#${id}"`),id);
+    assert.equal([...html.matchAll(new RegExp(`\\bid="${id}"`,'g'))].length,1,`${id} must have one anchor target`);
+  }
+  for(const marker of ['A record of becoming.','Identity is the origin.','History is the signal.','Protocol state model','research-sheet','H(t + 1) = H(t) ∥ r','Each valid receipt extends'])assert.ok(html.includes(marker),marker);
+});
+
+test('docs distinguish attestation, informational scoring, product access and future credit policies',async()=>{
+  const html=await (await fetch(origin+'/docs')).text();
+  const text=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<[^>]*>/g,' ').replaceAll('&amp;','&').replace(/\s+/g,' ');
+  for(const phrase of ['Receipts are attestations, not proof of execution.','informational repayment score','Instant repayment and self-issued attestations do not earn positive credit history.','does not change borrowing limits, collateral requirements or interest rates.','REPUTATION ≠ TOKEN BALANCE','AGENT REPUTATION = CREDIT QUALITY','not an onchain allowlist','implemented but remains locked before token launch','Mainnet signing and mainnet reputation writes remain disabled.'])assert.ok(text.includes(phrase),phrase);
+});
+
+test('docs explain the complete evidence and capital flows without inventing active task or token utility',async()=>{
+  const html=await (await fetch(origin+'/docs')).text();
+  for(const id of ['reputation-tasks','collateral','example','current-status'])assert.ok(html.includes(`id="${id}"`));
+  for(const phrase of ['Task created','Agent performs task','Result verified','Receipt issued','History updated','Reputation recalculated','not a currently deployed generic task scheduler','Liquidity providers','Repayment + interest','AME does not create the lending capital.','Neither $AME collateral nor reputation-based reductions','illustrative future scenario','UNLOCK CREDIT PROFILE'])assert.ok(html.includes(phrase),phrase);
+});
