@@ -48,9 +48,8 @@ for (const route of ['/', '/lending', '/nfts', '/protocol', '/docs']) {
     const nav = html.match(/<nav\b[^>]*aria-label="Main navigation"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
     assert.ok(nav, 'Shared navigation must exist');
     const links = [...nav.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
-    assert.deepEqual(links.map(link => link[1].match(/href="([^"]+)"/)?.[1]), ['/lending', '/nfts', '/protocol', '/docs', 'https://x.com/ame_runtime', 'https://github.com/AME-ship-it/ame-core']);
-    assert.equal(links[0][1].includes('aria-current="page"'), route === '/lending');
-    for(const [index,path] of [[1,'/nfts'],[2,'/protocol'],[3,'/docs']]) assert.equal(links[index][1].includes('aria-current="page"'),route===path);
+    assert.deepEqual(links.map(link => link[1].match(/href="([^"]+)"/)?.[1]), ['/nfts', '/protocol', '/lending', '/docs', 'https://x.com/ame_runtime', 'https://github.com/AME-ship-it/ame-core']);
+    for(const [index,path] of [[0,'/nfts'],[1,'/protocol'],[2,'/lending'],[3,'/docs']]) assert.equal(links[index][1].includes('aria-current="page"'),route===path);
     assert.match(links[4][1], /target="_blank"/); assert.match(links[4][1], /rel="noopener noreferrer"/);
     assert.match(links[5][1], /target="_blank"/); assert.match(links[5][1], /rel="noopener noreferrer"/);
     const visible = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '').replace(/<[^>]*>/g, ' ');
@@ -79,7 +78,7 @@ test('homepage contains only the unchanged hero and functional creation CTA',asy
 for(const [route,markers] of [
   ['/docs',['Identity is the origin.','History is the signal.','Protocol state model','Current ERC-721 owner','H(t + 1) = H(t) ∥ r','/protocol']],
   ['/nfts',['An agent.','Not just an address.','identity-diagram','OWNER','METADATA','A transfer clears the previous wallet assignment','Give your agent a place to begin.']],
-  ['/protocol',['A record of becoming.','lifecycle','Authorized actors append attestations.','DERIVED HISTORY','PLANNED LAYER','Receipts are attestations']],
+  ['/protocol',['A record of becoming.','lifecycle','Authorized actors append attestations.','DERIVED HISTORY','CONCEPTUAL MODEL','Receipts are attestations']],
 ])test(`${route} preserves the relocated documentation`,async()=>{
   const response=await fetch(origin+route);assert.equal(response.status,200);const html=await response.text();
   for(const marker of markers)assert.ok(html.includes(marker),marker);
@@ -115,4 +114,21 @@ test('wallet status is contextual and docs opening has no obsolete global launch
   assert.ok(html.includes('AME network:'));
   assert.ok(!html.includes('WRONG NETWORK'));
   assert.ok(!html.includes('Target:'));
+});
+
+test('Protocol V2 renders six labelled chapters, accessible diagrams and bounded financial claims',async()=>{
+  const html=await (await fetch(origin+'/protocol')).text();
+  const nav=html.match(/<nav[^>]*aria-label="Protocol chapters"[^>]*>([\s\S]*?)<\/nav>/)?.[1];assert.ok(nav);
+  for(const id of ['identity','architecture','evidence','reputation','credit','lifecycle']){
+    assert.ok(nav.includes('href="#'+id+'"'));
+    assert.equal([...html.matchAll(new RegExp(' id="'+id+'"','g'))].length,1);
+    assert.ok(html.includes('aria-labelledby="'+id+'-title"'));
+    assert.ok(html.includes('id="'+id+'-title"'));
+  }
+  for(const label of ['Identity architecture','Agent to credit architecture','Conceptual reputation evaluation model','Lending capital and repayment flow','Protocol lifecycle stages'])assert.ok(html.includes('aria-label="'+label+'"'));
+  const text=html.replace(/<script[^>]*>[\s\S]*?<\/script>/g,'').replace(/<[^>]*>/g,' ').replaceAll('&amp;','&').replace(/\s+/g,' ');
+  for(const phrase of ['ERC-721 identity, not an executable runtime','Receipts are attestations, not proof of execution.','narrow informational repayment score','does not adjust borrowing limits','Mainnet transaction signing remains disabled.','reputation does not create capital or guarantee a loan.','an NFT transfer does not transfer a borrower','CONCEPTUAL MODEL'])assert.ok(text.includes(phrase),phrase);
+  assert.ok(html.includes('href="/docs"'));assert.ok(html.includes('href="/nfts"'));assert.ok(html.includes('href="/lending"'));
+  const header=html.match(/<nav[^>]*aria-label="Main navigation"[^>]*>([\s\S]*?)<\/nav>/)?.[1];assert.ok(header);
+  assert.deepEqual([...header.matchAll(/<a[^>]*>([\s\S]*?)<\/a>/g)].map(m=>m[1].replace(/<[^>]*>/g,'').trim().replace(' ↗','')),['NFT','Protocol','Lending','Docs','X','GitHub']);
 });
