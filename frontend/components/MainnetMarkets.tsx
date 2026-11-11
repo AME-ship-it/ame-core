@@ -1,5 +1,9 @@
 'use client';
 import {useState} from 'react';
+import {useConfig} from 'wagmi';
+import {getConnection} from 'wagmi/actions';
+import {getAddress} from 'viem';
+import {requireHolderAccess} from '@/lib/holder-access';
 import {useQueries,useQuery} from '@tanstack/react-query';
 import {formatUnits,type Address,type Hex} from 'viem';
 import {MAINNET_CANDIDATES,MORPHO_ADDRESS} from '@/lib/morpho-config';
@@ -11,6 +15,7 @@ const n=(value:bigint|null|undefined,decimals=6)=>value===undefined||value===nul
 const pct=(v:number|null|undefined)=>v===undefined||v===null?'Unavailable':`${(v*100).toFixed(2)}%`;
 const actions:Record<MainnetAction,string>={supply:'Supply',borrow:'Borrow',repay:'Repay',withdraw:'Withdraw',addCollateral:'Add collateral',removeCollateral:'Remove collateral'};
 export function MainnetMarkets({account}:{account?:Address}){
+  const config=useConfig();
   const [selected,setSelected]=useState<Hex>(MAINNET_CANDIDATES[0].id);
   const [action,setAction]=useState<MainnetAction>('supply'),[amount,setAmount]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false);
   const [messageContext,setMessageContext]=useState(''),[simulationStatus,setSimulationStatus]=useState<string>();
@@ -21,6 +26,8 @@ export function MainnetMarkets({account}:{account?:Address}){
   async function simulate(){
     if(!data||!account||busy)return;setBusy(true);setMessageContext(context);setSimulationStatus(undefined);setMessage('Refreshing the position and preparing a read-only mainnet simulation.');
     try{
+      await requireHolderAccess(account);
+      const current=getConnection(config);if(!current.isConnected||!current.address||getAddress(current.address)!==getAddress(account))throw new Error('Wallet changed. Verify holder access again.');
       const fresh=await query.refetch();if(fresh.error||!fresh.data)throw new Error('Unable to refresh the verified mainnet position.');
       const snapshot=fresh.data;
       const col=action==='addCollateral'||action==='removeCollateral';const value=parseTokenAmount(amount,col?snapshot.collateralDecimals:snapshot.loanDecimals);

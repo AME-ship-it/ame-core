@@ -2,7 +2,9 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useConnection, useWriteContract } from 'wagmi';
+import { useConfig, useConnection, useWriteContract } from 'wagmi';
+import {getConnection} from 'wagmi/actions';
+import {holderGuardedAction,requireHolderAccess} from '@/lib/holder-access';
 import { encodeFunctionData, erc20Abi, formatUnits, getAddress, parseEventLogs, parseUnits, zeroAddress, type Abi, type Address, type Hash } from 'viem';
 import { ProductShell } from './ProductShell';
 import { developmentChain } from '@/lib/chains';
@@ -20,7 +22,8 @@ function quantity(value: bigint | undefined | null, decimals: number, symbol = '
   const [whole, fraction] = formatUnits(value, decimals).split('.');
   return `${whole}${fraction ? '.' + fraction.slice(0, 6) : ''}${symbol ? ' ' + symbol : ''}`;
 }
-export function Lending() {
+export function Lending({holderWallet}:{holderWallet:Address}) {
+  const config=useConfig();
   const connection = useConnection();
   const writer = useWriteContract();
   const queryClient = useQueryClient();
@@ -53,12 +56,15 @@ export function Lending() {
   const parseAmount = parseTokenAmount;
   async function send(address: Address, abi: Abi, functionName: string, args: readonly unknown[]) {
     if (!connection.address) throw new Error('Connect a wallet.');
+    const owner=connection.address;
+    const assertWallet=()=>{const current=getConnection(config);if(!current.isConnected||!current.address||getAddress(current.address)!==getAddress(owner)||getAddress(owner)!==getAddress(holderWallet)||current.chainId!==developmentChain.id)throw new Error('Wallet or network changed. Verify holder access again.');};
+    assertWallet();await requireHolderAccess(owner);assertWallet();
     setPhase('simulating');setMessage(`Simulating ${functionName} against the contract.`);
     const input = encodeFunctionData({ abi, functionName, args });
     const simulation = await agentClient.simulateContract({ address, abi, functionName, args, account: connection.address });
     setMessage(`Confirm ${functionName} in your wallet.`);
     setPhase('wallet');
-    const submitted = await writer.mutateAsync(simulation.request); setHash(submitted); setMessage(`Waiting for ${functionName} confirmation.`);
+    const submitted = await holderGuardedAction(owner,()=>getConnection(config).address,()=>{assertWallet();return writer.mutateAsync({...simulation.request,account:owner,chainId:developmentChain.id});}); setHash(submitted); setMessage(`Waiting for ${functionName} confirmation.`);
     setPhase('pending');
     const receipt = await agentClient.waitForTransactionReceipt({ hash: submitted, onReplaced: replacement => setHash(replacement.transaction.hash) });
     if (receipt.status !== 'success') throw new Error('Transaction reverted.');
@@ -123,6 +129,7 @@ export function Lending() {
     finally { setBusy(false); lock.current = false; }
   }
   return <ProductShell>
+    <p className="eyebrow" role="status">HOLDER VERIFIED · $AME HOLDER VERIFIED</p>
     <div className={styles.topline}><p className="eyebrow">// AME CREDIT / {developmentChain.name.toUpperCase()}</p><Link href="/agents" className="text-link">Agent identities ↗</Link></div>
     <h1 className="product-title">Lending_</h1>
     <div className={styles.networkTabs} aria-label="Lending network view"><button aria-pressed={view==='testnet'} disabled={busy} onClick={()=>setView('testnet')}>{process.env.NODE_ENV!=='production' && developmentChain.id===31337?'Local':'Robinhood Testnet'} · Lending</button><button aria-pressed={view==='mainnet'} disabled={busy} onClick={()=>setView('mainnet')}>Robinhood Mainnet · Read only</button></div>

@@ -82,6 +82,7 @@ Canonical evidence:
 - [Confirmed testnet lending lifecycle](contracts/deployments/lending-testnet-verification.json)
 - [Lending design and limitations](contracts/LENDING.md)
 - [Frontend integration](frontend/LENDING.md)
+- [Holder access, launch configuration and trust boundaries](frontend/HOLDER_ACCESS.md)
 - [Mainnet read-only integration](frontend/MAINNET.md)
 - [Mainnet activation and wallet acceptance checklist](frontend/MAINNET_ACCEPTANCE.md)
 - [Deploy Agent behavior, QA and identity deployment procedure](frontend/DEPLOY_AGENT_QA.md)

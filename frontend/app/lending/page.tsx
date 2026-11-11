@@ -1,2 +1,2 @@
-import { Lending } from '@/components/Lending';
-export default function Page() { return <Lending />; }
+import { HolderLending } from '@/components/HolderLending';
+export default function Page() { return <HolderLending />; }

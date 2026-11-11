@@ -16,7 +16,7 @@ for (const [route, text] of cases) {
     assert.ok(!html.includes('https://github.com/AME-ship-it/ame-protocol'), 'Public pages must not link to the obsolete AME repository');
     assert.ok(html.includes(text));
     if(route !== '/') assert.equal(html.includes('CONTRACT NOT CONFIGURED'), !configured);
-    if (route !== '/') assert.ok(html.includes('Robinhood Chain Testnet'));
+    if (route !== '/' && route !== '/lending') assert.ok(html.includes('Robinhood Chain Testnet'));
     if (['/activity', '/treasury', '/score'].includes(route)) assert.ok(html.includes('NOT AVAILABLE'));
     if (route === '/deploy') assert.match(html, /disabled=""/);
     assert.ok(!html.includes('ipfs://ame-local-agent-1'));
@@ -24,33 +24,21 @@ for (const [route, text] of cases) {
   });
 }
 
-test('public lending reflects explicit market configuration and keeps disconnected actions disabled', async () => {
-  if (process.env.AME_QA_LENDING_CONFIGURED === '1') {
-    const response=await fetch(`${origin}/lending`);const html=await response.text();
-    assert.equal(response.status,200);assert.ok(!html.includes('No lending market is deployed/configured'));
-    assert.ok(html.includes('Reading the configured onchain market'));
-    return;
-  }
-  const response = await fetch(`${origin}/lending`); const html = await response.text();
-  assert.equal(response.status, 200); assert.ok(html.includes('LENDING UNAVAILABLE'));
-  for (const label of ['Supply','Withdraw','Borrow','Repay up to amount','Add collateral','Remove collateral']) {
-    // Conditional position controls need not render until an actual position exists.
-    const buttons = [...html.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)].filter(match=>match[2].includes(label) && !/\brole="tab"/.test(match[1]));
-    for (const match of buttons) assert.ok(match[1].includes('disabled'));
-  }
-  assert.match(html, /Borrow APR \/ simple<\/dt><dd>Unavailable<\/dd>/); // Inspect the APR field, not the unrelated 0.5% share-slippage disclosure.
+test('public lending is locked before wallet verification and has no actionable terminal',async()=>{
+  const response=await fetch(origin+'/lending');assert.equal(response.status,200);const html=await response.text();
+  for(const phrase of ['Holder-gated lending for autonomous agents.','CONNECT WALLET TO ACCESS LENDING','Holder access activates with the $AME launch.'])assert.ok(html.includes(phrase));
+  for(const marker of ['id="action-deposit"','id="terminal-amount"','Open owner-bound position','Refresh mock test quotes','id="mainnet-market-title"'])assert.ok(!html.includes(marker),marker);
+  assert.ok(!html.includes('HOLDER VERIFIED'));assert.ok(!html.includes('Get $AME'));
 });
 
-test('lending terminal exposes all action panels, honest charts and safe mainnet navigation',async()=>{
-  const response=await fetch(`${origin}/lending`);const html=await response.text();assert.equal(response.status,200);
-  for(const action of ['deposit','borrow','repay','withdraw','addCollateral','removeCollateral'])assert.ok(html.includes(`id="action-${action}"`));
-  assert.ok(html.includes('Market history'));assert.ok(html.includes('Asset allocation'));
-  assert.ok(html.includes('Robinhood Mainnet · Read only'));assert.ok(html.includes('READY FOR INPUT'));
-  const submit=[...html.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)].find(m=>m[2].replace(/<!--.*?-->/g,'').replace(/<[^>]*>/g,'').trim()==='Supply ↗');
-  assert.ok(submit && submit[1].includes('disabled'));
-  assert.ok(!html.includes('MAINNET LENDING ENABLED'));
+test('holder endpoint is independently fail-closed before launch and rejects client authority',async()=>{
+  const post=body=>fetch(origin+'/api/holder-access',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  assert.equal((await post({walletAddress:'invalid'})).status,400);
+  assert.equal((await post({walletAddress:'0x1000000000000000000000000000000000000001',isHolder:true})).status,400);
+  const r=await post({walletAddress:'0x1000000000000000000000000000000000000001'}),d=await r.json();
+  assert.equal(r.status,200);assert.equal(d.access,'locked');assert.equal(d.reason,'PRE_LAUNCH');assert.equal(d.isHolder,null);assert.equal(d.tokenAddress,null);assert.equal(d.tokenURL,null);assert.match(r.headers.get('cache-control'),/no-store/);
+  assert.equal((await post({walletAddress:d.wallet,intent:'action'})).status,403);
 });
-
 
 for (const route of ['/', '/lending', '/nfts', '/protocol', '/docs']) {
   test(`shared header on ${route} exposes ordered lending navigation and accurate active state`, async () => {

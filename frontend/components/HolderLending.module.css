@@ -1,0 +1,6 @@
+.gate{max-width:680px;padding:52px 0 88px}
+.gate .state{font:10px Consolas,monospace;letter-spacing:2px;color:#c6a9d9;margin-bottom:24px}
+.gate h2{font-size:clamp(25px,3.8vw,38px);line-height:1.2;letter-spacing:-1px;text-wrap:balance}
+.gate p{line-height:1.9;color:var(--muted);overflow-wrap:anywhere}
+.actions{display:flex;align-items:center;flex-wrap:wrap;gap:24px;margin-top:30px}
+.gate small{display:block;margin-top:24px;color:var(--muted);font:10px/1.8 Consolas,monospace}
