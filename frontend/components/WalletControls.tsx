@@ -5,6 +5,7 @@ import { useConnect, useConnection, useConnectors, useDisconnect, useSwitchChain
 import { robinhoodMainnet } from '@/lib/chains';
 import { walletNetworkStatus } from '@/lib/wallet-network';
 import { walletErrorMessage } from '@/lib/wallet-errors';
+import {TokenBalance} from './TokenBalance';
 
 export function WalletControls() {
   const { address, chainId, isConnected, isConnecting, isReconnecting } = useConnection();
@@ -16,6 +17,8 @@ export function WalletControls() {
   const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [discovering, setDiscovering] = useState(false);
+  const [open,setOpen]=useState(false);
+  function openDialog(){setOpen(true);dialog.current?.showModal();}
   const busy = connection.isPending || switching.isPending || disconnection.isPending || discovering || isConnecting || isReconnecting;
   const connected = mounted && isConnected;
   const networkStatus = walletNetworkStatus(connected, chainId);
@@ -63,16 +66,17 @@ export function WalletControls() {
   const available = discovered.length ? discovered : connectors;
   return <>
     <div className="header-actions flex items-center">
-      <button className="network" onClick={() => dialog.current?.showModal()} aria-label="View wallet network status">
+      <button className="network" onClick={openDialog} aria-label="View wallet network status">
         <i className={connected ? undefined : 'network-idle'} />
         {connected ? networkStatus.label.toUpperCase() : 'NETWORK NOT CONNECTED'} <span>⌄</span>
       </button>
-      <button className="wallet" disabled={mounted && busy} aria-busy={mounted && busy} onClick={() => dialog.current?.showModal()}>{buttonLabel} <span>↗</span></button>
+      <button className="wallet" disabled={mounted && busy} aria-busy={mounted && busy} onClick={openDialog}>{buttonLabel} <span>↗</span></button>
     </div>
-    <dialog ref={dialog} aria-labelledby="wallet-title" onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
+    <dialog ref={dialog} aria-labelledby="wallet-title" onClose={()=>setOpen(false)} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
       <div><p className="eyebrow">// AME WEB3 CORE</p><h2 id="wallet-title">{connected ? 'WALLET / CONNECTED' : 'WALLET / CONNECT'}</h2>
         <p className="wallet-detail">{connected ? address : 'Connect an injected wallet. MetaMask is supported on desktop and in its mobile browser.'}</p>
         <p>Connected network: {networkStatus.label}<br />AME network: {robinhoodMainnet.name} · {robinhoodMainnet.id}</p>
+        {open&&connected&&address&&<TokenBalance wallet={address} chainId={chainId}/>}
         <p className="wallet-notice" role="status" aria-live="polite">{busy ? switching.isPending ? 'SWITCHING NETWORK — Check your wallet.' : isReconnecting ? 'RESTORING CONNECTION...' : disconnection.isPending ? 'DISCONNECTING...' : 'CONNECTING — Check your wallet.' : error || (connected ? 'Connection active. No signature or transaction requested.' : 'No signature or transaction is required to connect.')}</p>
         <div className="wallet-controls">
           {!connected && available.map(connector => <button className="wallet" key={connector.uid} disabled={busy} onClick={() => void connectWallet(connector)}>{connector.id === 'injected' ? 'CONNECT INJECTED WALLET' : `CONNECT ${connector.name.toUpperCase()}`}</button>)}

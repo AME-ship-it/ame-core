@@ -14,7 +14,7 @@ export function HolderLending(){
   const forceRefresh=useRef(false);
   useEffect(()=>setMounted(true),[]);
   const wallet=mounted&&connection.isConnected&&connection.address?getAddress(connection.address):undefined;
-  const query=useQuery({queryKey:['ame-holder-access',wallet],queryFn:({signal})=>{const refresh=forceRefresh.current;forceRefresh.current=false;return requestHolderAccess(wallet!,{signal,refresh});},enabled:!!wallet,retry:false,staleTime:0,gcTime:0,refetchInterval:15_000,refetchOnWindowFocus:'always'});
+  const query=useQuery({queryKey:['ame-holder-access',wallet],queryFn:({signal})=>{const refresh=forceRefresh.current;forceRefresh.current=false;return requestHolderAccess(wallet!,{signal,refresh});},enabled:!!wallet,retry:false,staleTime:0,gcTime:0,refetchInterval:q=>q.state.data?.reason==='PRE_LAUNCH'?false:15_000,refetchIntervalInBackground:false,refetchOnWindowFocus:'always'});
   useEffect(()=>{if(!query.data)return;const timer=setTimeout(()=>setClock(Date.now()),Math.max(0,query.data.expiresAt-Date.now()+1));return()=>clearTimeout(timer);},[query.data]);
   const state=holderPresentation({connected:!!wallet,wallet,data:query.data,pending:query.isPending,failed:query.isError,now:Math.max(clock,Date.now())});
   if(state==='unlocked')return <HolderAccessBoundary state={state}><Lending holderWallet={wallet!}/></HolderAccessBoundary>;

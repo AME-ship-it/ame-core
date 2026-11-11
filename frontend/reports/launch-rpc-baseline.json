@@ -1,0 +1,12 @@
+{
+  "measuredAt": "2026-11-11T19:06:24.525Z",
+  "chainId": 4663,
+  "method": "eth_blockNumber",
+  "attempts": 12,
+  "successfulSamples": 12,
+  "concurrency": 1,
+  "p50Ms": 129.3,
+  "p95Ms": 147.4,
+  "errors": 0,
+  "publicWrites": 0
+}

@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "forkBlock": "111932110",
+  "publicBroadcasts": 0,
+  "markets": [
+    {
+      "label": "USDe / USDG",
+      "checks": {
+        "discoveryAndBalances": "PASS",
+        "supplyAdapterAndFiniteAllowance": "PASS",
+        "collateralAdapter": "PASS",
+        "authorizationRejection": "PASS",
+        "borrowAdapterAndSimulation": "PASS",
+        "healthRevert": "PASS",
+        "fullShareRepayAndRefresh": "PASS",
+        "collateralRemoval": "PASS",
+        "withdrawShareBound": "PASS",
+        "allowanceCleanup": "PASS"
+      }
+    },
+    {
+      "label": "syrupUSDG / USDG",
+      "checks": {
+        "discoveryAndBalances": "PASS",
+        "supplyAdapterAndFiniteAllowance": "PASS",
+        "collateralAdapter": "PASS",
+        "authorizationRejection": "PASS",
+        "borrowAdapterAndSimulation": "PASS",
+        "healthRevert": "PASS",
+        "fullShareRepayAndRefresh": "PASS",
+        "collateralRemoval": "PASS",
+        "withdrawShareBound": "PASS",
+        "allowanceCleanup": "PASS"
+      }
+    }
+  ]
+}

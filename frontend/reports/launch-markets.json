@@ -1,0 +1,102 @@
+{
+  "observedAt": "2026-11-11T18:57:51.065Z",
+  "chainId": 4663,
+  "publicBroadcasts": 0,
+  "markets": [
+    {
+      "id": "0xc845da65a020ddca5f132efa8fea79676d8edfdea504226a4c01e7a9e34cddd6",
+      "label": "USDe / USDG",
+      "params": {
+        "loanToken": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "collateralToken": "0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34",
+        "oracle": "0xE64849bd4AD03DfaBbe02bb521de19997a19055f",
+        "irm": "0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1",
+        "lltv": "915000000000000000"
+      },
+      "block": "111933598",
+      "timestamp": "1794424138",
+      "loanSymbol": "USDG",
+      "loanDecimals": 6,
+      "collateralSymbol": "USDe",
+      "collateralDecimals": 18,
+      "liquidity": "43510301281180",
+      "utilization": "879987058726818959",
+      "borrowApr": 0.04339430673984,
+      "supplyApy": 0.038924899861235894,
+      "price": "1000000000000000000000000",
+      "dependencyHashes": {
+        "loan": "0x864cc9ad53b338b82da1f7cab85ab0b3d5c8861acb422b6fec63cf36234f36a6",
+        "collateral": "0x43d4a9c80fe87d7d878b8c8bdcb419261a1cb037e6833918c67c9b74e8519ca4",
+        "oracle": "0x89955d5181423e3a5b7755e01918706c555872b4e78eb5976c851f8efb3af12f",
+        "irm": "0x27bdf07d4b41c5785e200e5d27ae0eb734a7573049196ac686a2c9bf3473b97b"
+      },
+      "feeds": [
+        {
+          "address": "0xd9B1f2958298F25bf1289B5aaB7fB6d1B7416c95",
+          "answer": "99956987",
+          "updatedAt": "1794421963",
+          "roundConsistent": true
+        }
+      ],
+      "oracleConfiguration": {
+        "kind": "META_ORACLE",
+        "primary": "0x68B60430a1E2d663cCD975Be31d3d31EBa8Ee501",
+        "backup": "0xceE05FD68fE4799dbfBB9aD14D74E073c7a194B0",
+        "current": "0x68B60430a1E2d663cCD975Be31d3d31EBa8Ee501",
+        "threshold": "5000000000000000",
+        "challenge": "57600",
+        "healing": "86400",
+        "implementation": "0x6a16d6fe1ba26e6ba52fda03972b1fe2e31ca729",
+        "sourceMatchedImplementation": true,
+        "feed": "0xd9B1f2958298F25bf1289B5aaB7fB6d1B7416c95",
+        "scale": "10000000000000000"
+      },
+      "oracleReview": "PENDING — oracle configuration is observed; market-specific freshness, depeg, governance and liquidation policies are not approved.",
+      "signingEnabled": false
+    },
+    {
+      "id": "0x919a9b6b94dae7c86620eaf7a08e597aae8a4c3a9e9c7671771fbaf62b6b61c7",
+      "label": "syrupUSDG / USDG",
+      "params": {
+        "loanToken": "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
+        "collateralToken": "0x40858070814a57FdF33a613ae84fE0a8b4a874f7",
+        "oracle": "0x152c638fad68913739Ee19Ba8eF47fAEB09DCa91",
+        "irm": "0x2BD3d5965B26B51814AC95127B2b80dD6CcC0fa1",
+        "lltv": "915000000000000000"
+      },
+      "block": "111933617",
+      "timestamp": "1794424140",
+      "loanSymbol": "USDG",
+      "loanDecimals": 6,
+      "collateralSymbol": "syrupUSDG",
+      "collateralDecimals": 6,
+      "liquidity": "9527555633024",
+      "utilization": "900468377906997702",
+      "borrowApr": 0.04202961298776,
+      "supplyApy": 0.03857163102216814,
+      "price": "1018469301997593443000000000000000000",
+      "dependencyHashes": {
+        "loan": "0x864cc9ad53b338b82da1f7cab85ab0b3d5c8861acb422b6fec63cf36234f36a6",
+        "collateral": "0xc91c79f8c922a0c3a31f130aa8199c2f9ae03027ac49f2ad759dde9cb8b1dd61",
+        "oracle": "0x2e20c09cc9042e7ab7161709c65552fdfcf7b1dd617e0254b87ba6d132b06a0c",
+        "irm": "0x27bdf07d4b41c5785e200e5d27ae0eb734a7573049196ac686a2c9bf3473b97b"
+      },
+      "feeds": [
+        {
+          "address": "0x3bEdEA9CE3ead0Db4EA60dC497568DEdDe85dBa3",
+          "answer": "1018469301997593443",
+          "updatedAt": "1794338465",
+          "roundConsistent": true
+        }
+      ],
+      "oracleConfiguration": {
+        "kind": "EXCHANGE_RATE",
+        "feed": "0x3bEdEA9CE3ead0Db4EA60dC497568DEdDe85dBa3",
+        "scale": "1000000000000000000",
+        "sourceMatchedImplementation": false
+      },
+      "oracleReview": "PENDING — oracle configuration is observed; market-specific freshness, depeg, governance and liquidation policies are not approved.",
+      "signingEnabled": false
+    }
+  ]
+}

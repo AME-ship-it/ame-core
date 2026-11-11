@@ -1,0 +1,45 @@
+{
+  "measuredAt": "2026-11-11T19:08:00.426Z",
+  "environment": "local-production-server",
+  "concurrency": 4,
+  "publicWrites": 0,
+  "api": {
+    "samples": 24,
+    "p50": 23.5,
+    "p95": 525.2,
+    "errors": 8,
+    "statuses": {
+      "200": 16,
+      "503": 8
+    }
+  },
+  "routes": {
+    "health": {
+      "samples": 8,
+      "p50": 289,
+      "p95": 565.7,
+      "errors": 8,
+      "statuses": {
+        "503": 8
+      }
+    },
+    "token-state": {
+      "samples": 8,
+      "p50": 17.2,
+      "p95": 141.3,
+      "errors": 0,
+      "statuses": {
+        "200": 8
+      }
+    },
+    "holder-access": {
+      "samples": 8,
+      "p50": 17.3,
+      "p95": 153.6,
+      "errors": 0,
+      "statuses": {
+        "200": 8
+      }
+    }
+  }
+}

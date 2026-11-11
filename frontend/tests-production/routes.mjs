@@ -140,3 +140,17 @@ test('shared header exposes the exact AME token contract address without changin
     assert.ok(header.includes('aria-label="Copy AME token contract address 0x5c5607a98e663e74590386dc7fa46de3cc7eb1b1"'));
   }
 });
+
+test('token API stays unactivated and rejects caller-selected tokens or authority',async()=>{
+  const post=body=>fetch(origin+'/api/token-state',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  const r=await post({walletAddress:'0x1000000000000000000000000000000000000001'}),d=await r.json();assert.equal(r.status,200);assert.equal(d.status,'disabled');assert.equal(d.balance,null);assert.equal(d.token,null);assert.equal(d.chainId,4663);assert.ok(!('access'in d));
+  for(const b of [{walletAddress:'invalid'},{walletAddress:d.wallet,tokenAddress:'0x3000000000000000000000000000000000000003'}])assert.equal((await post(b)).status,400);
+});
+test('health is read-only, freshness-aware and does not disclose provider URLs',async()=>{
+  const r=await fetch(origin+'/api/health'),d=await r.json();assert.ok([200,503].includes(r.status));assert.equal(d.chainId,4663);assert.ok(['available','unavailable'].includes(d.status));assert.ok(!JSON.stringify(d).includes('https://'));assert.match(r.headers.get('server-timing'),/app;dur=/);
+});
+test('performance ingestion accepts bounded numeric metrics, never wallet or arbitrary payload fields',async()=>{
+  const post=body=>fetch(origin+'/api/performance',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  assert.equal((await post({name:'LCP',value:1000,rating:'good'})).status,204);
+  assert.equal((await post({name:'LCP',value:1000,rating:'good',wallet:'private'})).status,400);
+});

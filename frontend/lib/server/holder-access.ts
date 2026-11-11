@@ -1,6 +1,8 @@
 import {createPublicClient,erc20Abi,getAddress,http,isAddress,parseUnits,zeroAddress,type Address,type Hex} from 'viem';
 import {mainnet,base,arbitrum,optimism,polygon,bsc,avalanche} from 'viem/chains';
 import type {HolderAccess} from '../holder-access.ts';
+import {readTokenConfig,readTokenSnapshot} from './token-state.ts';
+import {allowRequest,boundedJSON,apiHeaders} from './api-guard.ts';
 
 if(typeof window!=='undefined')throw new Error('Server holder verification cannot run in a browser.');
 type Env=Record<string,string|undefined>;
@@ -15,6 +17,10 @@ export function readHolderConfig(env:Env=process.env):HolderConfig|null{
   if(fields.every(v=>!v))return null;
   const [token,threshold,id]=fields;
   if(!isAddress(token)||getAddress(token)===zeroAddress||!/^\d+$/.test(id)||!Number.isSafeInteger(Number(id))||Number(id)<=0||threshold.length>90||!/^(0|[1-9]\d*)(\.\d+)?$/.test(threshold)||!/[1-9]/.test(threshold))throw new HolderConfigurationError('Invalid holder configuration');
+  if(env.NODE_ENV==='production'){
+    const verified=readTokenConfig(env);
+    if(!verified||verified.address!==getAddress(token)||Number(id)!==4663)throw new HolderConfigurationError('Verified mainnet token configuration required');
+  }
   const rpc=env.AME_TOKEN_RPC_URL?.trim()||defaults.get(Number(id));
   if(!rpc)throw new HolderConfigurationError('RPC required for configured token chain');
   try{const u=new URL(rpc);if(u.protocol!=='https:'||u.username||u.password||['localhost','127.0.0.1','::1','[::1]'].includes(u.hostname))throw new Error();}catch{throw new HolderConfigurationError('Remote HTTPS token RPC required');}
@@ -66,15 +72,28 @@ export function createHolderVerifier({config=()=>readHolderConfig(),client=rpcCl
     pending.set(key,work);try{return await work;}finally{pending.delete(key);}
   };
 }
-export const verifyHolderAccess=createHolderVerifier();
+const legacyVerifier=createHolderVerifier();
+export async function verifyHolderAccess(input:string,refresh=false):Promise<HolderAccess>{
+  if(process.env.NODE_ENV!=='production')return legacyVerifier(input,refresh);
+  if(!isAddress(input)||getAddress(input)===zeroAddress)throw new InvalidHolderWallet('Invalid wallet address');
+  const wallet=getAddress(input),locked=(reason:HolderAccess['reason']):HolderAccess=>({wallet,status:reason==='PRE_LAUNCH'?'success':'unavailable',access:'locked',isHolder:null,reason,balance:null,threshold:null,decimals:null,chainId:null,tokenAddress:null,tokenURL:null,block:null,checkedAt:Date.now(),expiresAt:Date.now()+15_000});
+  let cfg:HolderConfig|null;try{cfg=readHolderConfig();}catch{return locked('CONFIGURATION_ERROR');}if(!cfg)return locked('PRE_LAUNCH');
+  const state=await readTokenSnapshot(wallet,refresh);
+  if(state.status!=='synchronized'||state.decimals===null||state.balance===null)return locked('VERIFICATION_UNAVAILABLE');
+  if((cfg.threshold.split('.')[1]?.length||0)>state.decimals)return locked('CONFIGURATION_ERROR');
+  const threshold=parseUnits(cfg.threshold,state.decimals);if(threshold<=0n||threshold>MAX)return locked('CONFIGURATION_ERROR');
+  const isHolder=BigInt(state.balance)>=threshold;
+  return {wallet,status:'success',access:isHolder?'unlocked':'locked',isHolder,reason:isHolder?'HOLDER':'NOT_HOLDER',balance:state.balance,threshold:String(threshold),decimals:state.decimals,chainId:4663,tokenAddress:cfg.token,tokenURL:cfg.tokenURL,block:state.block,checkedAt:state.checkedAt,expiresAt:state.expiresAt};
+}
 
 /** Same server check authorizes status reads and fresh first-party action preparation. */
 export async function handleHolderAccess(request:Request,verify=verifyHolderAccess):Promise<Response>{
-  const headers={'cache-control':'private, no-store','content-type':'application/json'};
+  const headers={...apiHeaders(performance.now()),'content-type':'application/json'};
   const error=(message:string,status:number)=>Response.json({status:'error',access:'locked',error:message},{status,headers});
+  if(!allowRequest(request))return Response.json({status:'error',access:'locked',error:'Rate limit exceeded'},{status:429,headers:{...headers,'retry-after':'60'}});
   if(Number(request.headers.get('content-length')||0)>2048)return error('Request too large',413);
   let body:Record<string,unknown>;
-  try{const text=await request.text();if(text.length>2048)return error('Request too large',413);body=JSON.parse(text);if(!body||typeof body!=='object'||Array.isArray(body))throw new Error();}catch{return error('Invalid JSON request',400);}
+  try{body=await boundedJSON(request) as Record<string,unknown>;if(!body||typeof body!=='object'||Array.isArray(body))throw new Error();}catch(e){return error('Invalid JSON request',e instanceof Error&&e.message==='BODY_TOO_LARGE'?413:400);}
   if(Object.keys(body).some(k=>!['walletAddress','refresh','intent'].includes(k))||typeof body.walletAddress!=='string'||(body.refresh!==undefined&&typeof body.refresh!=='boolean')||(body.intent!==undefined&&!['status','action'].includes(String(body.intent))))return error('Invalid holder request',400);
   try{
     const result=await verify(body.walletAddress,body.intent==='action'||body.refresh===true);

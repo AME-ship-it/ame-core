@@ -3,6 +3,7 @@ import {mainnetReadClient} from './lending-history.ts';
 import {MAINNET_CANDIDATES,MORPHO_ADDRESS,MORPHO_CHAIN_ID,MORPHO_RUNTIME_HASH,morphoABI,morphoIrmABI,morphoOracleABI,feedRoundABI,type MainnetCandidate,type MorphoMarket,type MorphoParams} from './morpho-config.ts';
 import {accrueMarket,annualizedRates,assetsDown,assetsUp,positionRisk} from './morpho-math.ts';
 import {readOracleConfiguration} from './morpho-oracles.ts';
+import {uniqueEvidence} from './evidence.ts';
 export const paramsComponents=[{name:'loanToken',type:'address'},{name:'collateralToken',type:'address'},{name:'oracle',type:'address'},{name:'irm',type:'address'},{name:'lltv',type:'uint256'}] as const;
 export function marketId(params:MorphoParams){return keccak256(encodeAbiParameters([{type:'tuple',components:paramsComponents}],[params]));}
 export function candidateFor(id:Hex):MainnetCandidate {
@@ -69,9 +70,11 @@ export async function readMorphoMarket(id:Hex,account?:Address,mainnetReadClient
 export type MorphoSnapshot=Awaited<ReturnType<typeof readMorphoMarket>>;
 export async function readMorphoWalletHistory(id:Hex,account:Address){
   candidateFor(id);await verifyMainnetCore();const last=await mainnetReadClient.getBlockNumber();const first=last>4999n?last-4999n:0n;
+  const anchor=await mainnetReadClient.getBlock({blockNumber:last});
   const common={address:MORPHO_ADDRESS,abi:morphoABI,args:{id,onBehalf:account},fromBlock:first,toBlock:last,strict:true} as const;
   const [borrow,repay]=await Promise.all([
     mainnetReadClient.getContractEvents({...common,eventName:'Borrow'}),mainnetReadClient.getContractEvents({...common,eventName:'Repay'}),
   ]);
-  return [...borrow,...repay].sort((a,b)=>a.blockNumber<b.blockNumber?-1:a.blockNumber>b.blockNumber?1:a.logIndex-b.logIndex);
+  if((await mainnetReadClient.getBlock({blockNumber:last})).hash!==anchor.hash)throw new Error('History reorganized; refresh the snapshot.');
+  return uniqueEvidence([...borrow,...repay],4663,MORPHO_ADDRESS).sort((a,b)=>a.blockNumber<b.blockNumber?-1:a.blockNumber>b.blockNumber?1:a.logIndex-b.logIndex);
 }

@@ -1,4 +1,5 @@
 import {handleHolderAccess} from '@/lib/server/holder-access';
+import {withApiMetrics} from '@/lib/server/api-guard';
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
-export async function POST(request:Request){return handleHolderAccess(request);}
+export const POST=withApiMetrics('holder-access',handleHolderAccess);
