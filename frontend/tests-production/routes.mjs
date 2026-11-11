@@ -43,17 +43,17 @@ test('holder endpoint is independently fail-closed before launch and rejects cli
   assert.equal((await post({walletAddress:d.wallet,intent:'action'})).status,403);
 });
 
-for (const route of ['/', '/lending', '/nfts', '/protocol', '/docs']) {
+for (const route of ['/', '/tasks', '/lending', '/nfts', '/protocol', '/docs']) {
   test(`shared header on ${route} exposes ordered lending navigation and accurate active state`, async () => {
     const response = await fetch(`${origin}${route}`); assert.equal(response.status, 200);
     const html = await response.text();
     const nav = html.match(/<nav\b[^>]*aria-label="Main navigation"[^>]*>([\s\S]*?)<\/nav>/)?.[1];
     assert.ok(nav, 'Shared navigation must exist');
     const links = [...nav.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)];
-    assert.deepEqual(links.map(link => link[1].match(/href="([^"]+)"/)?.[1]), ['/nfts', '/protocol', '/lending', '/docs', 'https://x.com/ame_runtime', 'https://github.com/AME-ship-it/ame-core']);
-    for(const [index,path] of [[0,'/nfts'],[1,'/protocol'],[2,'/lending'],[3,'/docs']]) assert.equal(links[index][1].includes('aria-current="page"'),route===path);
-    assert.match(links[4][1], /target="_blank"/); assert.match(links[4][1], /rel="noopener noreferrer"/);
+    assert.deepEqual(links.map(link => link[1].match(/href="([^"]+)"/)?.[1]), ['/nfts', '/tasks', '/protocol', '/lending', '/docs', 'https://x.com/ame_runtime', 'https://github.com/AME-ship-it/ame-core']);
+    for(const [index,path] of [[0,'/nfts'],[1,'/tasks'],[2,'/protocol'],[3,'/lending'],[4,'/docs']]) assert.equal(links[index][1].includes('aria-current="page"'),route===path);
     assert.match(links[5][1], /target="_blank"/); assert.match(links[5][1], /rel="noopener noreferrer"/);
+    assert.match(links[6][1], /target="_blank"/); assert.match(links[6][1], /rel="noopener noreferrer"/);
     const visible = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '').replace(/<[^>]*>/g, ' ');
     assert.ok(!/\bexperiment(?:al)?\b/i.test(visible), 'Product UI must not contain experimental labels');
     assert.ok(html.includes('CONNECT WALLET'));
@@ -132,7 +132,7 @@ test('Protocol V2 renders six labelled chapters, accessible diagrams and bounded
   for(const phrase of ['ERC-721 identity, not an executable runtime','Receipts are attestations, not proof of execution.','narrow informational repayment score','does not adjust borrowing limits','Mainnet transaction signing remains disabled.','reputation does not create capital or guarantee a loan.','an NFT transfer does not transfer a borrower','CONCEPTUAL MODEL'])assert.ok(text.includes(phrase),phrase);
   assert.ok(html.includes('href="/docs"'));assert.ok(html.includes('href="/nfts"'));assert.ok(html.includes('href="/lending"'));
   const header=html.match(/<nav[^>]*aria-label="Main navigation"[^>]*>([\s\S]*?)<\/nav>/)?.[1];assert.ok(header);
-  assert.deepEqual([...header.matchAll(/<a[^>]*>([\s\S]*?)<\/a>/g)].map(m=>m[1].replace(/<[^>]*>/g,'').trim().replace(' ↗','')),['NFT','Protocol','Lending','Docs','X','GitHub']);
+  assert.deepEqual([...header.matchAll(/<a[^>]*>([\s\S]*?)<\/a>/g)].map(m=>m[1].replace(/<[^>]*>/g,'').trim().replace(' ↗','')),['NFT','Tasks','Protocol','Lending','Docs','X','GitHub']);
 });
 
 test('shared header exposes the exact AME token contract address without changing navigation destinations',async()=>{

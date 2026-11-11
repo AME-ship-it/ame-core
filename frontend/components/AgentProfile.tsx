@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import {AgentTaskHistory} from './TaskHistory';
 import { useQuery } from '@tanstack/react-query';
 import { zeroAddress } from 'viem';
 import { agentLabel, isMissingAgent, parseAgentId, readAgent } from '@/lib/agents';
@@ -29,7 +30,7 @@ export function AgentProfile({ id }: { id: string }) {
           <div><dt>METADATA POINTER</dt><dd className="metadata-pointer">{agent.metadataURI}</dd></div>
           <div><dt>IDENTITY NAME</dt><dd>{metadata?.name??'NOT PROVIDED'}</dd></div><div><dt>DESCRIPTION</dt><dd>{metadata?.description??metadata?.issue??'NOT PROVIDED'}</dd></div>
           {agent.mintTransaction&&<div><dt>MINT TRANSACTION</dt><dd>{explorer?<a href={`${explorer}/tx/${agent.mintTransaction}`} target="_blank" rel="noopener noreferrer">{agent.mintTransaction} ↗</a>:agent.mintTransaction}</dd></div>}
-        </dl>{agent.historyIssue&&<p className="product-copy" role="status">{agent.historyIssue}</p>}<p className="product-copy">Ownership, wallet and metadata are contract reads. Metadata can be updated by the current NFT owner. The assigned agent wallet is not a custodial wallet, executable AI runtime or lending authorization. Financial and task metrics are not stored by this core.</p></>}
+        </dl>{developmentChain.id===4663&&<AgentTaskHistory id={id}/>} {agent.historyIssue&&<p className="product-copy" role="status">{agent.historyIssue}</p>}<p className="product-copy">Ownership, wallet and metadata are contract reads. Metadata can be updated by the current NFT owner. The assigned agent wallet is not a custodial wallet, executable AI runtime or lending authorization. Financial and task metrics are not stored by this core.</p></>}
       </>}
   </ProductShell>;
 }

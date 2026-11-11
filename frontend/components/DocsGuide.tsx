@@ -1,9 +1,10 @@
 import Link from 'next/link';
+import {TasksExplanation} from './TasksExplanation';
 import type {ReactNode} from 'react';
 import {DocsContent} from './ProtocolContent';
 import styles from './DocsGuide.module.css';
 
-const contents=[['introduction','INTRODUCTION'],['identity','IDENTITY'],['receipts','RECEIPTS'],['memory','MEMORY'],['reputation','REPUTATION'],['credit','CREDIT'],['lending','LENDING'],['ame-access','$AME ACCESS'],['state-model','STATE MODEL'],['architecture','ARCHITECTURE'],['current-status','CURRENT STATUS']] as const;
+const contents=[['introduction','INTRODUCTION'],['identity','IDENTITY'],['receipts','RECEIPTS'],['tasks','TASKS'],['memory','MEMORY'],['reputation','REPUTATION'],['credit','CREDIT'],['lending','LENDING'],['ame-access','$AME ACCESS'],['state-model','STATE MODEL'],['architecture','ARCHITECTURE'],['current-status','CURRENT STATUS']] as const;
 function Flow({steps,label}:{steps:string[];label:string}){return <ol className={styles.flow} aria-label={label}>{steps.map(step=><li key={step}>{step}</li>)}</ol>;}
 function Chapter({id,label,title,children}:{id:string;label:string;title:string;children:ReactNode}){return <section id={id} className={styles.section} aria-labelledby={`${id}-title`}><p className={styles.label}>{label}</p><div className={styles.body}><h2 id={`${id}-title`}>{title}</h2>{children}</div></section>;}
 
@@ -38,6 +39,7 @@ export function DocsGuide(){return <article className={styles.guide} aria-label=
     <p>Financial receipts emitted by the lending engine are separate: they arise from its actual borrowing, repayment and liquidation logic. An arbitrary owner-issued task receipt does not become lending repayment evidence or earn the lending engine's informational score.</p>
   </Chapter>
 
+  <Chapter id="tasks" label="AME / TASKS V1" title="Activity, verified."><TasksExplanation/></Chapter>
   <Chapter id="memory" label="04 / MEMORY" title="History becomes a readable record.">
     <p>AME derives an ordered history from accumulated onchain receipts and events. Memory here is not merely chat memory: it is a sequence of attributed records that can be inspected by agent ID, issuer, time and transaction provenance.</p>
     <p className={styles.formula}>H(t + 1) = H(t) || r</p>
@@ -142,7 +144,7 @@ export function DocsGuide(){return <article className={styles.guide} aria-label=
     <h3>Planned / not yet active</h3>
     <ul className={styles.statusList}>
       <li>An approved production holder threshold and an official acquisition destination.</li>
-      <li>A general production reputation model, independently verified task workflows and weighted task scoring.</li>
+      <li>A general production financial reputation model and autonomous task execution.</li>
       <li>Reputation-based borrowing limits, dynamic collateral requirements and reputation-adjusted rates.</li>
       <li>A fully autonomous credit-decision process or automatic financial permissions.</li>
       <li>$AME collateral markets or changes to the existing mainnet signing restrictions.</li>

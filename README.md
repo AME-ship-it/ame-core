@@ -97,3 +97,7 @@ Canonical evidence:
 No private keys, wallet files, credentials, private RPC URLs, local environments or build caches belong here. Public addresses, ABIs, transaction hashes and chain configuration are intentionally included. Public deployment scripts require explicit authorization; CI never executes them. Mock pricing, economic, liquidation and Sybil limitations remain unresolved for real-value use.
 
 Use `feature/*` branches, PRs and review as described in [Security and review](SECURITY.md). No repository-wide license has been selected; existing file-level notices are preserved.
+
+## AME Tasks V1
+
+The `/tasks` terminal provides live mainnet contract research and transaction-analysis tools, wallet-authorized task verification, and profile history integration. Three task types define 10/20/30 Task XP (maximum 60 per ownership epoch). Production completion/XP writes remain explicitly disabled pending approved durable Redis storage and real-store concurrency validation. Evidence reads and analysis checks award no XP. Task XP grants no financial permissions and is separate from repayment reputation. See [Tasks V1 architecture, API and release gates](frontend/TASKS.md).

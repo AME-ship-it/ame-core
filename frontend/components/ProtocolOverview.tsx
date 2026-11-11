@@ -3,7 +3,7 @@ import styles from './ProtocolOverview.module.css';
 
 const chapters = [
   ['identity','Identity layer'],['architecture','Protocol architecture'],['evidence','Evidence & receipts'],
-  ['reputation','Reputation engine'],['credit','Credit infrastructure'],['lifecycle','Protocol lifecycle'],
+  ['reputation','Reputation engine'],['credit','Credit infrastructure'],['lifecycle','Protocol lifecycle'],['tasks','Verified task activity'],
 ] as const;
 const architecture = [
   ['AGENT','An actor operating through a wallet.'],['IDENTITY NFT','A persistent ERC-721 reference.'],
@@ -73,4 +73,5 @@ export function ProtocolOverview(){return <article className={styles.overview}>
     <p className={styles.emphasis}>Identity is the origin.<br/>History is the signal.<br/>Reputation is the interpretation.<br/>Credit is the consequence of an eligible market interaction.</p>
     <Link className={styles.link} href="/docs">Read the technical documentation <span aria-hidden="true">↗</span></Link>
   </Chapter>
+<Chapter id="tasks" number="07" title="Verified task activity"><p>Tasks V1 adds wallet-authorized, user-assisted activity to agent history. Signed submissions are graded against confirmed chain evidence. Wallet control, contract research and transaction analysis earn at most 60 Task XP per ownership epoch after durable recording is enabled.</p><p>Task XP is independent from repayment-based financial reputation. It grants no lending permission and changes no rates or credit limits. The current evidence tools award no XP while production persistence remains disabled. Records are offchain attestations, not onchain receipts or autonomous execution claims.</p><Link className={styles.link} href="/tasks">Explore Tasks V1 ↗</Link></Chapter>
 </article>;}

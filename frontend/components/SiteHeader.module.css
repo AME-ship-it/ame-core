@@ -9,3 +9,5 @@
 .contractAddress button>span:last-child{overflow-wrap:anywhere;min-width:0;user-select:text}
 .copyStatus{display:block;font:9px/1.8 Consolas,monospace;color:#b5b4be}
 .copyStatus:empty{display:none}
+
+@media(max-width:720px){nav.links{gap:clamp(10px,2.5vw,20px)}}
