@@ -132,3 +132,11 @@ test('Protocol V2 renders six labelled chapters, accessible diagrams and bounded
   const header=html.match(/<nav[^>]*aria-label="Main navigation"[^>]*>([\s\S]*?)<\/nav>/)?.[1];assert.ok(header);
   assert.deepEqual([...header.matchAll(/<a[^>]*>([\s\S]*?)<\/a>/g)].map(m=>m[1].replace(/<[^>]*>/g,'').trim().replace(' ↗','')),['NFT','Protocol','Lending','Docs','X','GitHub']);
 });
+
+test('shared header exposes the exact AME token contract address without changing navigation destinations',async()=>{
+  for(const route of ['/','/protocol','/lending']){
+    const html=await (await fetch(origin+route)).text();const header=html.match(/<header[^>]*>([\s\S]*?)<\/header>/)?.[1];assert.ok(header);
+    assert.ok(header.includes('0x5c5607a98e663e74590386dc7fa46de3cc7eb1b1'));
+    assert.ok(header.includes('aria-label="Copy AME token contract address 0x5c5607a98e663e74590386dc7fa46de3cc7eb1b1"'));
+  }
+});

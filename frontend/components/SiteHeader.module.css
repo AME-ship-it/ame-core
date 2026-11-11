@@ -2,3 +2,10 @@
 .links a[aria-current]{color:var(--green)}
 .links a[aria-current]::after{content:"";position:absolute;left:0;bottom:3px;width:16px;height:1px;background:currentColor;opacity:.65;pointer-events:none}
 @media(max-width:720px){nav.links{gap:clamp(12px,4vw,30px)}}
+.header{height:auto;min-height:102px;flex-wrap:wrap;padding-top:28px;padding-bottom:16px;row-gap:16px}
+.contractAddress{order:4;flex-basis:100%;min-width:0;text-align:center}
+.contractAddress button{display:inline-flex;align-items:baseline;gap:9px;max-width:100%;padding:3px 0;font:clamp(8px,1.8vw,10px)/1.8 Consolas,monospace;color:#aaa8b0;text-align:left}
+.contractAddress button>span:first-child{color:#d5d1da;font-size:8px;letter-spacing:1px}
+.contractAddress button>span:last-child{overflow-wrap:anywhere;min-width:0;user-select:text}
+.copyStatus{display:block;font:9px/1.8 Consolas,monospace;color:#b5b4be}
+.copyStatus:empty{display:none}
