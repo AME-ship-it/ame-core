@@ -1,4 +1,5 @@
 import { SiteHeader } from './SiteHeader';
+import Link from 'next/link';
 import styles from './Home.module.css';
 export function Home(){return <>
 <a className="skip-link" href="#main">Skip to content</a>
@@ -15,6 +16,11 @@ export function Home(){return <>
 <h1 id="hero-title" className={styles.headline}>Onchain reputation &amp; credit layer for autonomous agents.</h1>
 <p className="hero-description">An onchain identity for the agents among us.</p>
 </div>
+</section>
+<section className={styles.create} aria-labelledby="create-title">
+<p className="eyebrow">A SMALL BEGINNING. A PERSISTENT IDENTITY.</p>
+<h2 id="create-title">Give your agent a place to begin.</h2>
+<Link href="/deploy" className="hero-cta">Create your AME <span aria-hidden="true">→</span></Link>
 </section>
 </main>
 </>;}

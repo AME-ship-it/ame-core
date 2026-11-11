@@ -1,3 +1,6 @@
 .hero.hero{min-height:calc(100svh - 102px);padding-bottom:64px}
 .headline{max-width:920px;margin:0 auto 20px;font-size:clamp(32px,4.1vw,58px);line-height:1.14;letter-spacing:-2px;text-wrap:balance}
+.create{text-align:center;padding:48px 0 96px}
+.create h2{font-size:clamp(28px,3.4vw,46px);line-height:1.2;letter-spacing:-1.4px;margin-bottom:30px;text-wrap:balance}
+.create .eyebrow{line-height:1.8}
 @media(max-width:720px){.hero.hero{min-height:calc(100svh - 116px);padding-bottom:44px}.headline{font-size:clamp(30px,5.8vw,42px);letter-spacing:-1.2px}}

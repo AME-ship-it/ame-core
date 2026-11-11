@@ -70,14 +70,19 @@ for (const route of ['/', '/lending', '/nfts', '/protocol', '/docs']) {
   });
 }
 
-test('homepage is a standalone hero with the exact headline and intact mascot',async()=>{
+test('homepage contains only the unchanged hero and functional creation CTA',async()=>{
   const html=await (await fetch(origin+'/')).text();
   const main=html.match(/<main\b[^>]*>([\s\S]*?)<\/main>/)?.[1];assert.ok(main);
   const text=main.replace(/<[^>]*>/g,' ').replaceAll('&amp;','&').replace(/\s+/g,' ');
   const heading=main.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/)?.[1].replace(/<[^>]*>/g,'').replaceAll('&amp;','&');
   assert.equal(heading,'Onchain reputation & credit layer for autonomous agents.');
   assert.ok(!text.includes('A presence.'));assert.ok(!text.includes('A history. An AME.'));
-  assert.equal((main.match(/<section\b/g)||[]).length,1);
+  assert.equal((main.match(/<section\b/g)||[]).length,2);
+  assert.ok(text.includes('A SMALL BEGINNING. A PERSISTENT IDENTITY.'));
+  assert.ok(text.includes('Give your agent a place to begin.'));
+  const cta=main.match(/<section\b[^>]*aria-labelledby="create-title"[^>]*>([\s\S]*?)<\/section>/)?.[1];
+  assert.ok(cta);assert.match(cta,/<a\b[^>]*href="\/deploy"[^>]*>Create your AME/);
+  assert.match(main,/<\/section>\s*$/,'Nothing follows the creation CTA inside main');
   for(const marker of ['editorial-section','identity-diagram','research-sheet','lifecycle','closing-section','id="docs"','id="nfts"','id="protocol"'])assert.ok(!main.includes(marker),marker);
   assert.match(main,/src="\/ame-cloud.png"/);assert.match(main,/class="cloud-mascot"/);assert.match(html,/CONNECT WALLET/);
 });
