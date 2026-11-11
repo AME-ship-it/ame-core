@@ -16,7 +16,8 @@ for (const [route, text] of cases) {
     assert.ok(!html.includes('https://github.com/AME-ship-it/ame-protocol'), 'Public pages must not link to the obsolete AME repository');
     assert.ok(html.includes(text));
     if(route !== '/') assert.equal(html.includes('CONTRACT NOT CONFIGURED'), !configured);
-    if (route !== '/' && route !== '/lending') assert.ok(html.includes('Robinhood Chain Testnet'));
+    // Network requirements belong to the identity flow, not every shared wallet modal.
+    if (route === '/deploy') assert.match(html, /ROBINHOOD CHAIN TESTNET/);
     if (['/activity', '/treasury', '/score'].includes(route)) assert.ok(html.includes('NOT AVAILABLE'));
     if (route === '/deploy') assert.match(html, /disabled=""/);
     assert.ok(!html.includes('ipfs://ame-local-agent-1'));

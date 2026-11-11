@@ -9,13 +9,13 @@ import { contracts, contractConfigurationIssue } from '@/lib/contracts';
 import { ProductShell } from './ProductShell';
 
 export function AgentsList() {
-  const { address, chainId, isConnected } = useConnection();
+  const { address, isConnected } = useConnection();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const enabled = mounted && isConnected && !!address && chainId === developmentChain.id && !contractConfigurationIssue;
+  const enabled = mounted && isConnected && !!address && !contractConfigurationIssue;
   const query = useQuery({ queryKey: ['owned-agents', developmentChain.id, contracts.agent.address, address], queryFn: () => readOwnedAgentIds(address!), enabled, retry: false, refetchInterval: 15_000 });
-  return <ProductShell><p className="eyebrow">// CURRENT OWNERSHIP</p><h1 className="product-title">YOUR AGENTS_</h1>
-    {!mounted || !isConnected ? <p className="product-copy">Connect your wallet using the header to view your agents.</p> : chainId !== developmentChain.id ? <p className="product-copy">WRONG NETWORK — Switch to {developmentChain.name} using the header.</p> : <>
+  return <ProductShell><p className="eyebrow">// CURRENT OWNERSHIP / {developmentChain.name.toUpperCase()}</p><h1 className="product-title">YOUR AGENTS_</h1>
+    {!mounted || !isConnected ? <p className="product-copy">Connect your wallet using the header to view your agents.</p> : <>
       <p className="product-copy address-wrap">OWNER / {address}</p>
       {query.isPending && enabled && <p role="status" className="product-copy">READING TRANSFER HISTORY...</p>}
       {query.error && <div role="alert"><p className="product-copy">{query.error.message}</p><button className="wallet" onClick={() => void query.refetch()}>RETRY READ</button></div>}

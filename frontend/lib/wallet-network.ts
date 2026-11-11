@@ -4,7 +4,7 @@ export function walletNetworkName(chainId: number | undefined): string {
   if (chainId === 1) return 'Ethereum Mainnet';
   if (chainId === robinhoodMainnet.id) return robinhoodMainnet.name;
   if (chainId === robinhoodTestnet.id) return robinhoodTestnet.name;
-  if (chainId === 31337) return 'AME Local';
+  if (process.env.NODE_ENV !== 'production' && chainId === 31337) return 'AME Local';
   return chainId === undefined ? 'Unknown network' : `Unrecognized network`;
 }
 

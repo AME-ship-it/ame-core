@@ -2,10 +2,11 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useConfig, useConnection, useWriteContract } from 'wagmi';
+import { useConfig, useConnection, useWriteContract, useSwitchChain } from 'wagmi';
 import {getConnection} from 'wagmi/actions';
 import {holderGuardedAction,requireHolderAccess} from '@/lib/holder-access';
 import { encodeFunctionData, erc20Abi, formatUnits, getAddress, parseEventLogs, parseUnits, zeroAddress, type Abi, type Address, type Hash } from 'viem';
+import {walletErrorMessage} from '@/lib/wallet-errors';
 import { ProductShell } from './ProductShell';
 import { developmentChain } from '@/lib/chains';
 import { agentClient } from '@/lib/agents';
@@ -26,8 +27,11 @@ export function Lending({holderWallet}:{holderWallet:Address}) {
   const config=useConfig();
   const connection = useConnection();
   const writer = useWriteContract();
+  const switching = useSwitchChain();
+  const [networkError,setNetworkError]=useState('');
+  useEffect(()=>setNetworkError(''),[connection.chainId,connection.address]);
   const queryClient = useQueryClient();
-  const [view,setView] = useState<'testnet'|'mainnet'>('testnet');
+  const [view,setView] = useState<'testnet'|'mainnet'>('mainnet');
   const [phase,setPhase] = useState<TransactionPhase>('idle');
   const lock = useRef(false);
   const [positionInput, setPositionInput] = useState('');
@@ -180,7 +184,8 @@ export function Lending({holderWallet}:{holderWallet:Address}) {
       </>}
     </section>
     {!connection.isConnected && <p className="product-copy">Connect with the existing header wallet controls to submit an action.</p>}
-    {connection.isConnected && connection.chainId !== developmentChain.id && <p className="product-copy">WRONG NETWORK — use the header to switch to {developmentChain.name}.</p>}
+    {connection.isConnected && connection.chainId !== developmentChain.id && <div className="product-copy"><p>These lending actions require {developmentChain.name} ({developmentChain.id}).</p><button className="wallet" disabled={busy||switching.isPending} onClick={async()=>{setNetworkError('');try{await switching.mutateAsync({chainId:developmentChain.id});}catch(error){setNetworkError(walletErrorMessage(error));}}}>{switching.isPending?'SWITCHING NETWORK...':'SWITCH TO '+developmentChain.name.toUpperCase()}</button></div>}
+    {networkError&&<p className="product-copy" role="alert">{networkError}</p>}
     <p className={styles.small}>Borrow proceeds always go to the original borrower. Approvals and each action are separate wallet confirmations. Supply/withdraw share quotes use a 0.5% slippage bound. Repayment does not require a valid oracle; liquidation and debt-bearing collateral withdrawals do. No private keys are stored here.</p>
     </>}
   </ProductShell>;
