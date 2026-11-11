@@ -73,11 +73,11 @@ export function DocsGuide(){return <article className={styles.guide} aria-label=
   </Chapter>
 
   <Chapter id="ame-access" label="08 / $AME UTILITY" title="$AME holder access">
-    <p>The holder gate is intended to let $AME holders access AME's lending application. <strong>It is implemented but remains locked before token launch.</strong> No production token address or holder threshold is configured, and no acquisition destination is invented.</p>
-    <p className={styles.formula}>$AME HOLDING = PRODUCT ACCESS<br/>AGENT REPUTATION = CREDIT QUALITY</p>
-    <Flow label="Product access after activation" steps={['Hold $AME','Verify token balance','Access lending']}/>
+    <p>The holder gate is intended to let $AME holders access AME's lending application. <strong>Verified $AME balance recognition is configured on Robinhood Chain Mainnet.</strong> Positive balances identify holders; premium and lending entitlements remain locked because no holder threshold has been approved. No acquisition destination is invented.</p>
+    <p className={styles.formula}>$AME HOLDING = HOLDER RECOGNITION<br/>AGENT REPUTATION = CREDIT QUALITY</p>
+    <Flow label="Product access after an approved entitlement policy" steps={['Hold $AME','Verify token balance','Access lending']}/>
     <Flow label="Separate future credit-quality policy" steps={['Agent history','Reputation','Credit conditions']}/>
-    <p>After activation, the server reads the configured ERC-20's decimals and balance on its configured chain, compares integer units against the threshold, and rechecks eligibility before first-party wallet writes. A balance check requires no signature. Verification failures keep access locked without labeling the wallet a non-holder.</p>
+    <p>The server reads the configured ERC-20's decimals and balance on its configured chain, reports positive-balance holder status without granting privileges, and compares integer units against a threshold only after that access rule is approved. It rechecks eligibility before first-party wallet writes. A balance check requires no signature. Verification failures keep access locked without labeling the wallet a non-holder.</p>
     <p>Holding more $AME does not automatically improve reputation or create borrowing power. There is no staking requirement, holder tier or reputation threshold in the V1 access gate.</p>
     <p className={styles.formula}>$AME holder + eligible agent + sufficient reputation = access to available credit conditions</p>
     <p className={styles.note}>This combined expression describes a possible future policy, not today's eligibility formula. Actual credit would also require market liquidity, required collateral and all applicable risk checks. Today's holder gate checks token holding only; the current engine applies its separate fixed controls.</p>
@@ -90,7 +90,7 @@ export function DocsGuide(){return <article className={styles.guide} aria-label=
     <p><strong>AME does not create the lending capital.</strong> Token supply or a holder's $AME balance is not automatically deposited as lending liquidity. Lending capital must be supplied as the market's actual accepted asset.</p>
     <p>The existing testnet market uses valueless tUSD/tCOL assets with fixed pricing and fixed risk parameters. It is unaudited and not a real-value lending product. Suppliers' claims are limited by available cash and can bear realized losses; liquidity and repayment are not guaranteed.</p>
     <p>Robinhood Chain mainnet integration reads existing Morpho Blue USDG markets with USDe or syrupUSDG collateral. Those integrations are read-only in AME, behind the product gate, and not approved for signing. Enabling holder verification will not activate mainnet financial transactions.</p>
-    <p>The <Link href="/lending" className="quiet-link">lending entry point ↗</Link> remains available, with access truthfully locked before the $AME launch.</p>
+    <p>The <Link href="/lending" className="quiet-link">lending entry point ↗</Link> remains available; lending entitlements require separately approved access rules.</p>
   </Chapter>
 
   <Chapter id="collateral" label="10 / COLLATERAL" title="Access is not collateral.">
@@ -135,13 +135,13 @@ export function DocsGuide(){return <article className={styles.guide} aria-label=
       <li>Authorized receipt attestations, financial receipt events and event-derived history/state views.</li>
       <li>The testnet engine's limited informational repayment score; no credit-policy adjustment based on that score.</li>
       <li>The lending interface, existing transaction preview and wallet-confirmation flow, now behind the holder gate.</li>
-      <li>ERC-20 balance/decimal verification, server-side application access checks, fresh write checks, short-lived cache and a locked pre-launch screen.</li>
+      <li>ERC-20 balance/decimal verification, server-side application access checks, fresh write checks, short-lived cache and verified token recognition with separately disabled lending entitlements.</li>
       <li>Read-only Robinhood mainnet market integration in code. Mainnet signing and mainnet reputation writes remain disabled.</li>
     </ul>
-    <p><strong>Current public access:</strong> the lending route is locked pending real $AME launch configuration. Implemented code is not the same as an activated product feature. Real-token holder/non-holder browser-wallet acceptance remains required at launch; real MetaMask mint-signing QA has not been certified.</p>
+    <p><strong>Current public access:</strong> the token balance reader recognizes the verified AME contract; lending entitlements remain locked pending an approved holder policy. Implemented code is not the same as an activated product feature. Real-token holder/non-holder browser-wallet acceptance remains required at launch; real MetaMask mint-signing QA has not been certified.</p>
     <h3>Planned / not yet active</h3>
     <ul className={styles.statusList}>
-      <li>Real $AME token activation, the production holder threshold and an official acquisition destination.</li>
+      <li>An approved production holder threshold and an official acquisition destination.</li>
       <li>A general production reputation model, independently verified task workflows and weighted task scoring.</li>
       <li>Reputation-based borrowing limits, dynamic collateral requirements and reputation-adjusted rates.</li>
       <li>A fully autonomous credit-decision process or automatic financial permissions.</li>

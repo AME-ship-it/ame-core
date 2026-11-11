@@ -21,7 +21,7 @@ export function createTokenReader({config=()=>readTokenConfig(),client=rpcClient
   const cache=new Map<string,TokenSnapshot>(),pending=new Map<string,Promise<TokenSnapshot>>();
   return async (input:string,refresh=false):Promise<TokenSnapshot>=>{
     if(!isAddress(input)||getAddress(input)===zeroAddress)throw new Error('INVALID_WALLET');
-    const wallet=getAddress(input),empty=(status:TokenSnapshot['status'],reason:string):TokenSnapshot=>({status,reason,chainId:4663,wallet,token:null,symbol:null,decimals:null,totalSupply:null,balance:null,allowance:null,spender:null,block:null,blockHash:null,blockTimestamp:null,checkedAt:now(),expiresAt:now(),transferCount:null,recentWindowComplete:false});
+    const wallet=getAddress(input),empty=(status:TokenSnapshot['status'],reason:string):TokenSnapshot=>({status,reason,holderStatus:'UNAVAILABLE',chainId:4663,wallet,token:null,symbol:null,decimals:null,totalSupply:null,balance:null,allowance:null,spender:null,block:null,blockHash:null,blockTimestamp:null,checkedAt:now(),expiresAt:now(),transferCount:null,recentWindowComplete:false});
     let c:TokenConfig|null;try{c=config();}catch{return empty('unavailable','CONFIGURATION_ERROR');}if(!c)return empty('disabled','TOKEN_NOT_ACTIVATED');
     const cfg=c,key=JSON.stringify([wallet,cfg.address,cfg.runtimeHash,cfg.decimals,cfg.symbol,String(cfg.maxSupply),String(cfg.deploymentBlock),cfg.rpc,cfg.spender]);
     const old=cache.get(key);if(!refresh&&old&&old.expiresAt>now())return old;
@@ -42,11 +42,11 @@ export function createTokenReader({config=()=>readTokenConfig(),client=rpcClient
         ]);
         if(decimals!==cfg.decimals||symbol!==cfg.symbol||totalSupply<=0n||totalSupply>cfg.maxSupply||balance<0n||balance>totalSupply)throw new Error('TOKEN_METADATA_MISMATCH');
         let transferCount:number|null=null,recentWindowComplete=false;
-        if(old?.block){const prior=BigInt(old.block),from=prior>2n?prior-2n:cfg.deploymentBlock;
-          if(block.number>=from&&block.number-from<=64n){try{const [sent,received]=await Promise.all([rpc.getLogs({address:cfg.address,event:transfer,args:{from:wallet},fromBlock:from,toBlock:block.number}),rpc.getLogs({address:cfg.address,event:transfer,args:{to:wallet},fromBlock:from,toBlock:block.number})]);transferCount=new Set([...sent,...received].map(e=>`${e.blockHash}:${e.transactionHash}:${e.logIndex}`)).size;recentWindowComplete=true;}catch{/* Balance snapshot is valid; bounded activity remains unavailable. */}}
+        {const prior=old?.block?BigInt(old.block):null;const start=prior===null?(block.number>2047n?block.number-2047n:0n):(prior>2n?prior-2n:0n);const from=start>cfg.deploymentBlock?start:cfg.deploymentBlock;
+          if(block.number>=from&&block.number-from<=2048n){try{const [sent,received]=await Promise.all([rpc.getLogs({address:cfg.address,event:transfer,args:{from:wallet},fromBlock:from,toBlock:block.number}),rpc.getLogs({address:cfg.address,event:transfer,args:{to:wallet},fromBlock:from,toBlock:block.number})]);transferCount=new Set([...sent,...received].filter(e=>!e.removed).map(e=>`${e.blockHash}:${e.transactionHash}:${e.logIndex}`)).size;recentWindowComplete=true;}catch{/* Balance snapshot is valid; bounded activity remains unavailable. */}}
         }
         const check=await rpc.getBlock({blockNumber:block.number});if(check.hash!==block.hash||await rpc.getChainId()!==4663)throw new Error('REORG_OR_CHAIN_CHANGE');
-        const result:TokenSnapshot={status:'synchronized',chainId:4663,wallet,token:cfg.address,symbol,decimals,totalSupply:String(totalSupply),balance:String(balance),allowance:allowance===null?null:String(allowance),spender:cfg.spender??null,block:String(block.number),blockHash:block.hash,blockTimestamp:Number(block.timestamp),checkedAt:now(),expiresAt:now()+10_000,transferCount,recentWindowComplete};
+        const result:TokenSnapshot={status:'synchronized',holderStatus:balance>0n?'HOLDER':'NON_HOLDER',chainId:4663,wallet,token:cfg.address,symbol,decimals,totalSupply:String(totalSupply),balance:String(balance),allowance:allowance===null?null:String(allowance),spender:cfg.spender??null,block:String(block.number),blockHash:block.hash,blockTimestamp:Number(block.timestamp),checkedAt:now(),expiresAt:now()+10_000,transferCount,recentWindowComplete};
         if(cache.size>=256)cache.delete(cache.keys().next().value!);cache.set(key,result);return result;
       }catch{/* Retry the entire pinned snapshot on the next configured provider; never mix endpoints. */}}
       cache.delete(key);return empty('unavailable','VERIFICATION_UNAVAILABLE');

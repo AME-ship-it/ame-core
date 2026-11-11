@@ -1,0 +1,183 @@
+{
+  "status": "VERIFIED_FOR_READ_ONLY_ACTIVATION",
+  "chainId": 4663,
+  "address": "0x5C5607A98E663e74590386dC7fa46DE3Cc7EB1B1",
+  "name": "Ame AI",
+  "symbol": "AME",
+  "decimals": 18,
+  "totalSupply": "1000000000000000000000000000",
+  "runtimeHash": "0x483c2d9468763e46cf53697f4b6d461c5b9464214d675356f8411221da1e26aa",
+  "bytecodeBytes": 3248,
+  "deploymentBlock": "111920000",
+  "deploymentTransaction": "0x5d0ab08693260eb6164b592ae2b3e7aa69d61220d0c97bf6610793ae8287f8db",
+  "launcher": "0xe33e9e479df8802cb0866d5d05258bec4cf62948",
+  "factory": "0x7ed598bcef8bd9edd8c97a195c6d13f40801ec7e",
+  "curve": "0x643eA4a6C540E26CfF04e7BC7f130B8810bB784B",
+  "sourceVerification": {
+    "compiler": "0.8.35+commit.47b9dedd",
+    "runtimeMatch": true,
+    "immutableAddressesVerified": true,
+    "source": "Sourcify exact-match router compilation sources; token runtime independently reproduced",
+    "externalMint": false,
+    "tokenOwner": false,
+    "proxy": false,
+    "burn": "Holder own balance or approved allowance"
+  },
+  "sourceUrl": "https://sourcify.dev/server/v2/contract/4663/0xe33e9e479df8802cb0866d5d05258bec4cf62948?fields=sources,metadata",
+  "publicFunctions": [
+    {
+      "name": "allowance",
+      "stateMutability": "view"
+    },
+    {
+      "name": "approve",
+      "stateMutability": "nonpayable"
+    },
+    {
+      "name": "balanceOf",
+      "stateMutability": "view"
+    },
+    {
+      "name": "burn",
+      "stateMutability": "nonpayable"
+    },
+    {
+      "name": "burnFrom",
+      "stateMutability": "nonpayable"
+    },
+    {
+      "name": "curve",
+      "stateMutability": "view"
+    },
+    {
+      "name": "decimals",
+      "stateMutability": "view"
+    },
+    {
+      "name": "deployer",
+      "stateMutability": "view"
+    },
+    {
+      "name": "description",
+      "stateMutability": "view"
+    },
+    {
+      "name": "getTokenInfo",
+      "stateMutability": "view"
+    },
+    {
+      "name": "launchFactory",
+      "stateMutability": "view"
+    },
+    {
+      "name": "logo",
+      "stateMutability": "view"
+    },
+    {
+      "name": "name",
+      "stateMutability": "view"
+    },
+    {
+      "name": "socials",
+      "stateMutability": "view"
+    },
+    {
+      "name": "symbol",
+      "stateMutability": "view"
+    },
+    {
+      "name": "totalSupply",
+      "stateMutability": "view"
+    },
+    {
+      "name": "transfer",
+      "stateMutability": "nonpayable"
+    },
+    {
+      "name": "transferFrom",
+      "stateMutability": "nonpayable"
+    }
+  ],
+  "proxySlots": {
+    "implementation": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "admin": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "beacon": "0x0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "launchRecord": {
+    "token": "0x5C5607A98E663e74590386dC7fa46DE3Cc7EB1B1",
+    "curve": "0x643eA4a6C540E26CfF04e7BC7f130B8810bB784B",
+    "deployer": "0x02f7C0E50c9C2B295f94413F1Ce82615064BeCBf",
+    "creatorFeeRecipient": "0x02f7C0E50c9C2B295f94413F1Ce82615064BeCBf",
+    "pairToken": "0x0000000000000000000000000000000000000000",
+    "graduationThreshold": "4200000000000000000",
+    "poolFee": 0,
+    "tickSpacing": 200,
+    "creatorTaxBps": 250,
+    "buybackEnabled": false,
+    "phase": 0,
+    "sweptQuote": "0",
+    "sweptTokens": "0",
+    "sweptAt": "0",
+    "exists": true
+  },
+  "curveSnapshot": {
+    "token": "0x5C5607A98E663e74590386dC7fa46DE3Cc7EB1B1",
+    "pairToken": "0x0000000000000000000000000000000000000000",
+    "factory": "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e",
+    "graduated": "false",
+    "realQuoteReserve": "1406792242005384963",
+    "trackedTokens": "544254315900625888820842474",
+    "creatorTaxBps": "250",
+    "feeBps": "100"
+  },
+  "indexing": {
+    "from": "110951156",
+    "to": "111951155",
+    "transferCount": 398,
+    "initialMint": {
+      "eventName": "Transfer",
+      "args": {
+        "from": "0x0000000000000000000000000000000000000000",
+        "to": "0x643eA4a6C540E26CfF04e7BC7f130B8810bB784B",
+        "value": "1000000000000000000000000000"
+      },
+      "address": "0x5c5607a98e663e74590386dc7fa46de3cc7eb1b1",
+      "topics": [
+        "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "0x000000000000000000000000643ea4a6c540e26cff04e7bc7f130b8810bb784b"
+      ],
+      "data": "0x0000000000000000000000000000000000000000033b2e3c9fd0803ce8000000",
+      "blockNumber": "111920000",
+      "transactionHash": "0x5d0ab08693260eb6164b592ae2b3e7aa69d61220d0c97bf6610793ae8287f8db",
+      "transactionIndex": 4,
+      "blockHash": "0xa71cc08db418dddadddd7d823a9d679413013eab8de99cd1a47b46740d4b6c5d",
+      "blockTimestamp": "0",
+      "logIndex": 5,
+      "removed": false
+    }
+  },
+  "balanceSamples": [
+    {
+      "wallet": "0x643eA4a6C540E26CfF04e7BC7f130B8810bB784B",
+      "balance": "550394048856394631957473378"
+    },
+    {
+      "wallet": "0x02f7c0e50c9c2b295f94413f1ce82615064becbf",
+      "balance": "0"
+    },
+    {
+      "wallet": "0x0000000000000000000000000000000000000001",
+      "balance": "0"
+    }
+  ],
+  "limitations": [
+    "Blockscout access blocked by local WebShield; not bypassed.",
+    "Historical state at the creation block is pruned on the public RPC; deployment provenance is established by constructor-only mint and verified factory TokenLaunched event.",
+    "The token runtime was reproduced from Sourcify-published launcher sources; this is not an independent audit of the launchpad or its bonding curve.",
+    "Factory registry reports active bonding curve, not a graduated Uniswap pool; unrelated permissionless pools were not exhaustively enumerated."
+  ],
+  "premiumEntitlementsEnabled": false,
+  "mainnetSigningEnabled": false,
+  "publicBroadcasts": 0
+}

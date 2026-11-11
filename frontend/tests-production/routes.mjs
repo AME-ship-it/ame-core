@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 // Supports the safe unconfigured build and the real configured testnet build.
 const origin = process.env.AME_QA_ORIGIN || 'http://127.0.0.1:3000';
+const tokenActive=process.env.AME_QA_TOKEN_ACTIVE==='1';
 const configured = process.env.AME_QA_CONTRACTS_CONFIGURED === '1';
 const cases = [
   ['/', 'Onchain reputation &amp; credit layer for autonomous agents.'], ['/deploy', 'DEPLOY AN AME'], ['/agents', 'YOUR AGENTS'],
@@ -27,7 +28,7 @@ for (const [route, text] of cases) {
 
 test('public lending is locked before wallet verification and has no actionable terminal',async()=>{
   const response=await fetch(origin+'/lending');assert.equal(response.status,200);const html=await response.text();
-  for(const phrase of ['Holder-gated lending for autonomous agents.','CONNECT WALLET TO ACCESS LENDING','Holder access activates with the $AME launch.'])assert.ok(html.includes(phrase));
+  for(const phrase of ['Holder-gated lending for autonomous agents.','CONNECT WALLET TO ACCESS LENDING','Product access follows the approved holder rules.'])assert.ok(html.includes(phrase));
   for(const marker of ['id="action-deposit"','id="terminal-amount"','Open owner-bound position','Refresh mock test quotes','id="mainnet-market-title"'])assert.ok(!html.includes(marker),marker);
   assert.ok(!html.includes('HOLDER VERIFIED'));assert.ok(!html.includes('Get $AME'));
 });
@@ -37,7 +38,7 @@ test('holder endpoint is independently fail-closed before launch and rejects cli
   assert.equal((await post({walletAddress:'invalid'})).status,400);
   assert.equal((await post({walletAddress:'0x1000000000000000000000000000000000000001',isHolder:true})).status,400);
   const r=await post({walletAddress:'0x1000000000000000000000000000000000000001'}),d=await r.json();
-  assert.equal(r.status,200);assert.equal(d.access,'locked');assert.equal(d.reason,'PRE_LAUNCH');assert.equal(d.isHolder,null);assert.equal(d.tokenAddress,null);assert.equal(d.tokenURL,null);assert.match(r.headers.get('cache-control'),/no-store/);
+  assert.equal(r.status,200);assert.equal(d.access,'locked');if(tokenActive){assert.equal(d.reason,'NOT_HOLDER');assert.equal(d.isHolder,false);assert.equal(d.tokenAddress.toLowerCase(),'0x5c5607a98e663e74590386dc7fa46de3cc7eb1b1');assert.equal(d.threshold,null);}else{assert.equal(d.reason,'PRE_LAUNCH');assert.equal(d.isHolder,null);assert.equal(d.tokenAddress,null);}assert.equal(d.tokenURL,null);assert.match(r.headers.get('cache-control'),/no-store/);
   assert.equal((await post({walletAddress:d.wallet,intent:'action'})).status,403);
 });
 
@@ -98,7 +99,7 @@ test('canonical docs expose working, unique contents anchors and preserve visual
 test('docs distinguish attestation, informational scoring, product access and future credit policies',async()=>{
   const html=await (await fetch(origin+'/docs')).text();
   const text=html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<[^>]*>/g,' ').replaceAll('&amp;','&').replace(/\s+/g,' ');
-  for(const phrase of ['Receipts are attestations, not proof of execution.','informational repayment score','Instant repayment and self-issued attestations do not earn positive credit history.','does not change borrowing limits, collateral requirements or interest rates.','REPUTATION ≠ TOKEN BALANCE','AGENT REPUTATION = CREDIT QUALITY','not an onchain allowlist','implemented but remains locked before token launch','Mainnet signing and mainnet reputation writes remain disabled.'])assert.ok(text.includes(phrase),phrase);
+  for(const phrase of ['Receipts are attestations, not proof of execution.','informational repayment score','Instant repayment and self-issued attestations do not earn positive credit history.','does not change borrowing limits, collateral requirements or interest rates.','REPUTATION ≠ TOKEN BALANCE','AGENT REPUTATION = CREDIT QUALITY','not an onchain allowlist','Verified $AME balance recognition is configured on Robinhood Chain Mainnet.','Mainnet signing and mainnet reputation writes remain disabled.'])assert.ok(text.includes(phrase),phrase);
 });
 
 test('docs explain the complete evidence and capital flows without inventing active task or token utility',async()=>{
@@ -143,7 +144,7 @@ test('shared header exposes the exact AME token contract address without changin
 
 test('token API stays unactivated and rejects caller-selected tokens or authority',async()=>{
   const post=body=>fetch(origin+'/api/token-state',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
-  const r=await post({walletAddress:'0x1000000000000000000000000000000000000001'}),d=await r.json();assert.equal(r.status,200);assert.equal(d.status,'disabled');assert.equal(d.balance,null);assert.equal(d.token,null);assert.equal(d.chainId,4663);assert.ok(!('access'in d));
+  const r=await post({walletAddress:'0x1000000000000000000000000000000000000001'}),d=await r.json();assert.equal(r.status,200);if(tokenActive){assert.equal(d.status,'synchronized');assert.equal(d.holderStatus,'NON_HOLDER');assert.equal(d.decimals,18);assert.equal(d.symbol,'AME');assert.equal(d.token.toLowerCase(),'0x5c5607a98e663e74590386dc7fa46de3cc7eb1b1');}else{assert.equal(d.status,'disabled');assert.equal(d.balance,null);assert.equal(d.token,null);}assert.equal(d.chainId,4663);assert.ok(!('access'in d));
   for(const b of [{walletAddress:'invalid'},{walletAddress:d.wallet,tokenAddress:'0x3000000000000000000000000000000000000003'}])assert.equal((await post(b)).status,400);
 });
 test('health is read-only, freshness-aware and does not disclose provider URLs',async()=>{
@@ -153,4 +154,12 @@ test('performance ingestion accepts bounded numeric metrics, never wallet or arb
   const post=body=>fetch(origin+'/api/performance',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
   assert.equal((await post({name:'LCP',value:1000,rating:'good'})).status,204);
   assert.equal((await post({name:'LCP',value:1000,rating:'good',wallet:'private'})).status,400);
+});
+
+test('activated positive-balance holder is recognized while premium action preparation remains denied',{skip:!tokenActive},async()=>{
+  const walletAddress='0x643eA4a6C540E26CfF04e7BC7f130B8810bB784B';
+  const post=(path,body)=>fetch(origin+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  const token=await (await post('/api/token-state',{walletAddress})).json();assert.equal(token.status,'synchronized');assert.equal(token.holderStatus,'HOLDER');assert.ok(BigInt(token.balance)>0n);
+  const status=await (await post('/api/holder-access',{walletAddress})).json();assert.equal(status.isHolder,true);assert.equal(status.access,'locked');assert.equal(status.reason,'ENTITLEMENTS_DISABLED');assert.equal(status.threshold,null);
+  assert.equal((await post('/api/holder-access',{walletAddress,intent:'action'})).status,403);
 });

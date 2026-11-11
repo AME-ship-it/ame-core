@@ -1,5 +1,7 @@
 # AME pre-token launch readiness
 
+This is the preserved pre-token checkpoint. The subsequent verified, read-only token activation and its separate entitlement boundary are documented in [TOKEN_ACTIVATION.md](TOKEN_ACTIVATION.md). The token launch does not resolve the financial-signing blockers below.
+
 This is an engineering checkpoint, not token, market, or security approval. No production environment values, deployed contracts or signing permissions are changed by this release. Mainnet signing is absent, independently of token configuration.
 
 ## Capability inventory

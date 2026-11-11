@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {keccak256} from 'viem';
 import {readTokenConfig,createTokenReader} from '../lib/server/token-state.ts';
-import {readHolderConfig} from '../lib/server/holder-access.ts';
+import {readHolderConfig,tokenHolderAccess,handleHolderAccess} from '../lib/server/holder-access.ts';
 import {boundedJSON,createRateLimiter} from '../lib/server/api-guard.ts';
+import {holderPresentation,isUnlockedForWallet} from '../lib/holder-access.ts';
 import {uniqueEvidence} from '../lib/evidence.ts';
 const token='0x3000000000000000000000000000000000000003',wallet='0x1000000000000000000000000000000000000001',other='0x2000000000000000000000000000000000000002',hash='0x'+'1'.repeat(64);
 const env={AME_TOKEN_VERIFIED:'1',AME_TOKEN_CHAIN_ID:'4663',AME_TOKEN_ADDRESS:token,AME_TOKEN_RUNTIME_HASH:keccak256('0x6000'),AME_TOKEN_SYMBOL:'AME',AME_TOKEN_DECIMALS:'6',AME_TOKEN_MAX_SUPPLY:'100000000000000000000',AME_TOKEN_DEPLOYMENT_BLOCK:'1'};
@@ -40,7 +41,7 @@ test('failed refresh clears cached success; allowance reads require an approved 
   s.tick();assert.equal((await s.reader(wallet)).status,'unavailable');
 });
 test('bounded Transfer monitoring reports only the recent indexed interval',async()=>{
-  const s=setup();await s.reader(wallet);s.advance();let windows=[];s.rpc.getLogs=async args=>{windows.push([args.fromBlock,args.toBlock]);return [{blockHash:hash,transactionHash:hash,logIndex:0}];};const d=await s.reader(wallet,true);assert.equal(d.transferCount,1);assert.equal(d.recentWindowComplete,true);assert.equal(windows.length,2);assert.equal(windows[0][1]-windows[0][0]<=64n,true);
+  const s=setup();await s.reader(wallet);s.advance();let windows=[];s.rpc.getLogs=async args=>{windows.push([args.fromBlock,args.toBlock]);return [{blockHash:hash,transactionHash:hash,logIndex:0}];};const d=await s.reader(wallet,true);assert.equal(d.transferCount,1);assert.equal(d.recentWindowComplete,true);assert.equal(windows.length,2);assert.equal(windows[0][1]-windows[0][0]<=2048n,true);
 });
 test('body byte limit applies to chunked requests and limiter recovers after its window',async()=>{
   await assert.rejects(boundedJSON(new Request('https://example.com',{method:'POST',body:'x'.repeat(2049)})),/BODY_TOO_LARGE/);
@@ -51,4 +52,18 @@ test('evidence processing is idempotent, source-bound and reorg-sensitive',()=>{
   const e={address:token,blockHash:hash,transactionHash:hash,logIndex:1};assert.equal(uniqueEvidence([e,e,{...e,removed:true}],4663,token).length,1);
   assert.throws(()=>uniqueEvidence([{...e,address:other}],4663,token),/provenance/);
   assert.throws(()=>uniqueEvidence([e,{...e,blockHash:'0x'+'2'.repeat(64)}],4663,token),/reorg/);
+});
+
+test('positive token balance recognizes a holder without granting any unapproved entitlement',async()=>{
+  const s=setup(),snapshot=await s.reader(wallet);assert.equal(snapshot.holderStatus,'HOLDER');const d=tokenHolderAccess(snapshot);assert.equal(d.isHolder,true);assert.equal(d.access,'locked');assert.equal(d.threshold,null);assert.equal(d.reason,'ENTITLEMENTS_DISABLED');assert.equal(isUnlockedForWallet(d,wallet,1000001),false);assert.equal(holderPresentation({connected:true,wallet,data:d,now:1000001}),'holder-no-entitlements');
+  const r=await handleHolderAccess(new Request('https://example.com',{method:'POST',body:JSON.stringify({walletAddress:wallet,intent:'action'})}),async()=>d);assert.equal(r.status,403);
+  const zero=tokenHolderAccess(await s.reader(other));assert.equal(zero.isHolder,false);assert.equal(zero.access,'locked');assert.equal(zero.reason,'NOT_HOLDER');
+});
+
+test('initial high-block indexing is bounded and large observation gaps never claim complete history',async()=>{
+  const s=setup();let head=100000n,windows=[];
+  s.rpc.getBlock=async args=>({number:args?.blockNumber??head,timestamp:1000n,hash});
+  s.rpc.getLogs=async args=>{windows.push(args);return [];};
+  const first=await s.reader(wallet);assert.equal(first.recentWindowComplete,true);assert.equal(windows.length,2);assert.equal(windows[0].toBlock-windows[0].fromBlock,2047n);
+  head+=10000n;windows=[];const next=await s.reader(wallet,true);assert.equal(next.status,'synchronized');assert.equal(next.recentWindowComplete,false);assert.equal(next.transferCount,null);assert.equal(windows.length,0);
 });

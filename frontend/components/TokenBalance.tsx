@@ -11,8 +11,11 @@ export function TokenBalance({wallet,chainId}:{wallet:Address;chainId?:number}){
   const data=query.data;
   return <div className="wallet-notice" style={{overflowWrap:'anywhere'}} aria-label="AME token balance" role="status">
     {chainId!==4663?'Select Robinhood Chain to read $AME balances.':query.isError?'Token service unavailable.':query.isPending?'Reading token configuration…':data?.status==='disabled'?'$AME recognition is not activated.':data?.status==='synchronized'&&data.decimals!==null&&data.balance!==null?<>
-      <p>{formatUnits(BigInt(data.balance),data.decimals)} {data.symbol}</p>
+      <p>{data.holderStatus==='HOLDER'?'HOLDER':'NON-HOLDER'} · {formatUnits(BigInt(data.balance),data.decimals)} {data.symbol}</p>
+      <p>Total supply: {data.totalSupply?formatUnits(BigInt(data.totalSupply),data.decimals):'Unavailable'} {data.symbol} · {data.decimals} decimals</p>
+      {data.token&&<a href={`https://robin.etherscan.io/token/${data.token}`} target="_blank" rel="noopener noreferrer">Token contract ↗</a>}
       <small>{query.isError||query.dataUpdatedAt+30_000<Date.now()?'STALE SNAPSHOT':'SYNCHRONIZED SNAPSHOT'} · Block {data.block} · {data.blockTimestamp?new Date(data.blockTimestamp*1000).toISOString():''}</small>
+      {data.transferCount!==null&&<p>Recent indexed transfers: {data.transferCount} · bounded window</p>}
       {data.allowance!==null&&<p>Approved allowance: {formatUnits(BigInt(data.allowance),data.decimals)} {data.symbol} · {data.spender}</p>}
     </>:'Token verification unavailable.'}
     {chainId===4663&&<button className="wallet" disabled={query.isFetching} onClick={()=>void query.refetch()}>REFRESH TOKEN STATE</button>}

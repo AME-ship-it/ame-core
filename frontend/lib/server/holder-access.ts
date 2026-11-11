@@ -2,6 +2,7 @@ import {createPublicClient,erc20Abi,getAddress,http,isAddress,parseUnits,zeroAdd
 import {mainnet,base,arbitrum,optimism,polygon,bsc,avalanche} from 'viem/chains';
 import type {HolderAccess} from '../holder-access.ts';
 import {readTokenConfig,readTokenSnapshot} from './token-state.ts';
+import type {TokenSnapshot} from '../token-state.ts';
 import {allowRequest,boundedJSON,apiHeaders} from './api-guard.ts';
 
 if(typeof window!=='undefined')throw new Error('Server holder verification cannot run in a browser.');
@@ -73,17 +74,21 @@ export function createHolderVerifier({config=()=>readHolderConfig(),client=rpcCl
   };
 }
 const legacyVerifier=createHolderVerifier();
+export function tokenHolderAccess(state:TokenSnapshot,thresholdInput?:string,tokenURL:string|null=null):HolderAccess{
+  const base:HolderAccess={wallet:getAddress(state.wallet),status:'unavailable',access:'locked',isHolder:null,reason:'VERIFICATION_UNAVAILABLE',balance:null,threshold:null,decimals:null,chainId:null,tokenAddress:null,tokenURL:null,block:null,checkedAt:state.checkedAt,expiresAt:state.expiresAt};
+  if(state.status!=='synchronized'||state.chainId!==4663||state.decimals===null||state.balance===null||!state.token||!isAddress(state.token))return base;
+  const common={...base,status:'success' as const,balance:state.balance,decimals:state.decimals,chainId:4663,tokenAddress:getAddress(state.token),tokenURL,block:state.block};
+  if(!thresholdInput)return {...common,isHolder:BigInt(state.balance)>0n,reason:BigInt(state.balance)>0n?'ENTITLEMENTS_DISABLED':'NOT_HOLDER'};
+  if(!/^(0|[1-9]\d*)(\.\d+)?$/.test(thresholdInput)||(thresholdInput.split('.')[1]?.length||0)>state.decimals)return {...base,reason:'CONFIGURATION_ERROR'};
+  const threshold=parseUnits(thresholdInput,state.decimals);if(threshold<=0n||threshold>MAX)return {...base,reason:'CONFIGURATION_ERROR'};
+  const eligible=BigInt(state.balance)>=threshold;
+  return {...common,access:eligible?'unlocked':'locked',isHolder:BigInt(state.balance)>0n,reason:eligible?'HOLDER':'NOT_HOLDER',threshold:String(threshold)};
+}
 export async function verifyHolderAccess(input:string,refresh=false):Promise<HolderAccess>{
   if(process.env.NODE_ENV!=='production')return legacyVerifier(input,refresh);
   if(!isAddress(input)||getAddress(input)===zeroAddress)throw new InvalidHolderWallet('Invalid wallet address');
   const wallet=getAddress(input),locked=(reason:HolderAccess['reason']):HolderAccess=>({wallet,status:reason==='PRE_LAUNCH'?'success':'unavailable',access:'locked',isHolder:null,reason,balance:null,threshold:null,decimals:null,chainId:null,tokenAddress:null,tokenURL:null,block:null,checkedAt:Date.now(),expiresAt:Date.now()+15_000});
-  let cfg:HolderConfig|null;try{cfg=readHolderConfig();}catch{return locked('CONFIGURATION_ERROR');}if(!cfg)return locked('PRE_LAUNCH');
-  const state=await readTokenSnapshot(wallet,refresh);
-  if(state.status!=='synchronized'||state.decimals===null||state.balance===null)return locked('VERIFICATION_UNAVAILABLE');
-  if((cfg.threshold.split('.')[1]?.length||0)>state.decimals)return locked('CONFIGURATION_ERROR');
-  const threshold=parseUnits(cfg.threshold,state.decimals);if(threshold<=0n||threshold>MAX)return locked('CONFIGURATION_ERROR');
-  const isHolder=BigInt(state.balance)>=threshold;
-  return {wallet,status:'success',access:isHolder?'unlocked':'locked',isHolder,reason:isHolder?'HOLDER':'NOT_HOLDER',balance:state.balance,threshold:String(threshold),decimals:state.decimals,chainId:4663,tokenAddress:cfg.token,tokenURL:cfg.tokenURL,block:state.block,checkedAt:state.checkedAt,expiresAt:state.expiresAt};
+  try{if(!readTokenConfig())return locked('PRE_LAUNCH');const threshold=process.env.AME_HOLDER_THRESHOLD?.trim();const cfg=threshold?readHolderConfig():null;if(threshold&&!cfg)return locked('CONFIGURATION_ERROR');return tokenHolderAccess(await readTokenSnapshot(wallet,refresh),cfg?.threshold,cfg?.tokenURL??null);}catch{return locked('CONFIGURATION_ERROR');}
 }
 
 /** Same server check authorizes status reads and fresh first-party action preparation. */

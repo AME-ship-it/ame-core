@@ -84,6 +84,7 @@ Canonical evidence:
 - [Frontend integration](frontend/LENDING.md)
 - [Holder access, launch configuration and trust boundaries](frontend/HOLDER_ACCESS.md)
 - [Pre-token launch audit, activation checklist, rollback and performance boundaries](frontend/LAUNCH_READINESS.md)
+- [Verified AME token recognition and disabled premium entitlements](frontend/TOKEN_ACTIVATION.md)
 - [Mainnet read-only integration](frontend/MAINNET.md)
 - [Mainnet activation and wallet acceptance checklist](frontend/MAINNET_ACCEPTANCE.md)
 - [Deploy Agent behavior, QA and identity deployment procedure](frontend/DEPLOY_AGENT_QA.md)

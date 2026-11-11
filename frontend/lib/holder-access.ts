@@ -1,6 +1,6 @@
 import {getAddress,isAddress,type Address} from 'viem';
 
-export type HolderReason='HOLDER'|'NOT_HOLDER'|'PRE_LAUNCH'|'CONFIGURATION_ERROR'|'VERIFICATION_UNAVAILABLE';
+export type HolderReason='HOLDER'|'NOT_HOLDER'|'PRE_LAUNCH'|'CONFIGURATION_ERROR'|'VERIFICATION_UNAVAILABLE'|'ENTITLEMENTS_DISABLED';
 export type HolderAccess={status:'success'|'unavailable';wallet:Address;access:'locked'|'unlocked';isHolder:boolean|null;reason:HolderReason;balance:string|null;threshold:string|null;decimals:number|null;chainId:number|null;tokenAddress:Address|null;tokenURL:string|null;block:string|null;checkedAt:number;expiresAt:number};
 
 /** Eligibility is separate from lending authorization, creditworthiness and network selection. */
@@ -12,7 +12,7 @@ export function isUnlockedForWallet(data:HolderAccess|undefined,wallet:string|un
   return BigInt(data.threshold!)>0n&&BigInt(data.balance!)>=BigInt(data.threshold!);
 }
 
-export type HolderPresentation='disconnected'|'checking'|'prelaunch'|'unavailable'|'not-holder'|'unlocked';
+export type HolderPresentation='disconnected'|'checking'|'prelaunch'|'unavailable'|'not-holder'|'unlocked'|'holder-no-entitlements';
 export function holderPresentation({connected,wallet,data,failed=false,pending=false,now=Date.now()}:{connected:boolean;wallet?:string;data?:HolderAccess;failed?:boolean;pending?:boolean;now?:number}):HolderPresentation{
   if(!connected||!wallet)return 'disconnected';
   if(!isAddress(wallet))return 'unavailable';
@@ -20,6 +20,7 @@ export function holderPresentation({connected,wallet,data,failed=false,pending=f
   if(pending&&!data)return 'checking';
   if(isUnlockedForWallet(data,wallet,now))return 'unlocked';
   if(!data||!isAddress(data.wallet)||getAddress(data.wallet)!==getAddress(wallet))return 'unavailable';
+  if(data.status==='success'&&data.reason==='ENTITLEMENTS_DISABLED'&&data.isHolder===true&&data.expiresAt>now)return 'holder-no-entitlements';
   if(data.reason==='PRE_LAUNCH')return 'prelaunch';
   if(data.reason==='NOT_HOLDER'&&data.status==='success'&&data.expiresAt>now)return 'not-holder';
   return 'unavailable';
