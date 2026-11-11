@@ -1,0 +1,15 @@
+{
+  "status": "CONFIRMED",
+  "chainId": 4663,
+  "contract": "AMEAgent",
+  "address": "0x3E5D2c59fc968DAE8Fc58AB1B46F3b3eB03d969c",
+  "deployer": "0xB8e4D5f2Bb9ca611791b8f2655352A516630f07D",
+  "transactionHash": "0xfba21e075fb63d817188fa18e2b93d16e812f205c36f71a3bbdf7ae64046f649",
+  "block": "112023846",
+  "blockHash": "0x5d35ec487a6a22cea2037c9fa88ef1ed595d8908c263d6950aafdf60f9150dd0",
+  "runtimeHash": "0x00fed62d536de73f266a6a4f6a9be09141c481aa745a33ad8034829ae71ad5f6",
+  "digest": "0x1ce1ec13edb636be950fcc49973cd2b38141edbefe1d601ae5a1bcd80ce8ee59",
+  "confirmations": 2,
+  "sourceVerification": "Exact local compiler input and creation/runtime reproduction; explorer publication is separate",
+  "financialPermissionsEnabled": false
+}

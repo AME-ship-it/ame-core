@@ -5,6 +5,7 @@ import { test } from 'node:test';
 const origin = process.env.AME_QA_ORIGIN || 'http://127.0.0.1:3000';
 const tokenActive=process.env.AME_QA_TOKEN_ACTIVE==='1';
 const configured = process.env.AME_QA_CONTRACTS_CONFIGURED === '1';
+const identityConfigured = process.env.AME_QA_IDENTITY_CONFIGURED === '1';
 const cases = [
   ['/', 'Onchain reputation &amp; credit layer for autonomous agents.'], ['/deploy', 'DEPLOY AN AME'], ['/agents', 'YOUR AGENTS'],
   ['/agent/1', 'AME_0001'], ['/activity', 'ACTIVITY'], ['/treasury', 'TREASURY'], ['/score', 'SCORE'], ['/lending', 'Lending_'],
@@ -16,7 +17,7 @@ for (const [route, text] of cases) {
     const html = await response.text();
     assert.ok(!html.includes('https://github.com/AME-ship-it/ame-protocol'), 'Public pages must not link to the obsolete AME repository');
     assert.ok(html.includes(text));
-    if(route !== '/') assert.equal(html.includes('CONTRACT NOT CONFIGURED'), true);
+    if(route !== '/') assert.equal(html.includes('CONTRACT NOT CONFIGURED'), !identityConfigured);
     // Network requirements belong to the identity flow, not every shared wallet modal.
     if (route === '/deploy') assert.match(html.replace(/<[^>]*>/g,''), /AGENT INITIALIZATION \/\s+ROBINHOOD CHAIN(?! TESTNET)/);
     if (['/activity', '/treasury', '/score'].includes(route)) assert.ok(html.includes('NOT AVAILABLE'));
