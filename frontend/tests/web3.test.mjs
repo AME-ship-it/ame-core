@@ -3,7 +3,8 @@ import { EventEmitter } from 'node:events';
 import { test } from 'node:test';
 import { connect, disconnect, getConnection, reconnect, switchChain } from 'wagmi/actions';
 import { createWeb3Config } from '../lib/web3.ts';
-import { developmentChain, robinhoodMainnet } from '../lib/chains.ts';
+import { developmentChain, robinhoodMainnet, robinhoodTestnet } from '../lib/chains.ts';
+import { walletNetworkStatus } from '../lib/wallet-network.ts';
 import { walletErrorMessage } from '../lib/wallet-errors.ts';
 
 const account = '0x1234567890123456789012345678901234567890';
@@ -55,10 +56,11 @@ function setup() {
   return { config, connector: config.connectors[0], provider };
 }
 
-test('localhost alone is enabled; mainnet metadata is prepared', () => {
+test('general wallet defaults to mainnet while identity/local chains remain available', () => {
   const { config } = setup();
   assert.equal(developmentChain.id, 31337);
-  assert.deepEqual(config.chains.map(chain => chain.id), [31337]);
+  assert.deepEqual(config.chains.map(chain => chain.id), [4663, 46630, 31337]);
+  assert.equal(config.state.chainId, 4663);
   assert.equal(robinhoodMainnet.id, 4663);
 });
 
@@ -148,3 +150,29 @@ test('pending requests and provider offline errors have actionable messages', ()
   assert.match(walletErrorMessage(new Error('RPC unavailable')), /REQUEST FAILED/);
 });
 
+
+for (const [id, name] of [[1,'Ethereum Mainnet'],[4663,'Robinhood Chain'],[46630,'Robinhood Chain Testnet'],[999999,'Unrecognized network']]) {
+  test('connection on chain '+id+' is accepted without an automatic switch', async()=>{
+    const {config,connector,provider}=setup();provider.chainId=id;
+    await connect(config,{connector});
+    assert.equal(getConnection(config).isConnected,true);
+    assert.equal(getConnection(config).chainId,id);
+    assert.equal(getConnection(config).address,account);
+    const state=walletNetworkStatus(true,id);
+    assert.equal(state.label,name+' · '+id);
+    assert.equal(state.canSwitchToMainnet,id!==4663);
+    assert.ok(!provider.requests.includes('wallet_switchEthereumChain'));
+    provider.rejectSwitch=true;
+    await assert.rejects(switchChain(config,{chainId:4663}),e=>walletErrorMessage(e).startsWith('REQUEST REJECTED'));
+    assert.equal(getConnection(config).chainId,id);
+    provider.rejectSwitch=false;
+    await switchChain(config,{chainId:4663});
+    assert.equal(getConnection(config).chainId,4663);
+    await switchChain(config,{chainId:46630});
+    assert.equal(getConnection(config).chainId,46630);
+    await disconnect(config);
+    assert.equal(walletNetworkStatus(false).label,'Not connected');
+    assert.equal(walletNetworkStatus(false).canSwitchToMainnet,false);
+    assert.ok(!provider.requests.some(method=>/sign|sendTransaction/i.test(method)));
+  });
+}

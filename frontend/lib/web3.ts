@@ -1,15 +1,17 @@
 import { createConfig, http } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import type { Chain } from 'viem';
-import { developmentChain } from './chains.ts';
+import { developmentChain, robinhoodMainnet, robinhoodTestnet } from './chains.ts';
 
 export function createWeb3Config() {
-  const chain: Chain = developmentChain;
+  // Wallet defaults are independent of the chain that hosts the identity contracts.
+  const chains: [Chain, ...Chain[]] = [robinhoodMainnet, robinhoodTestnet];
+  if (!chains.some(chain => chain.id === developmentChain.id)) chains.push(developmentChain);
   return createConfig({
-    chains: [chain],
+    chains,
     connectors: [injected({ shimDisconnect: true })],
     multiInjectedProviderDiscovery: true,
     ssr: true,
-    transports: { [chain.id]: http(chain.rpcUrls.default.http[0]) },
+    transports: Object.fromEntries(chains.map(chain => [chain.id, http(chain.rpcUrls.default.http[0])])),
   });
 }

@@ -13,7 +13,6 @@ export function DocsGuide(){return <article className={styles.guide} aria-label=
     <h1>Onchain reputation &amp; credit layer for autonomous agents.</h1>
     <p>AME gives agents a persistent financial identity. An agent begins with a wallet, receives an onchain identity, and can accumulate receipts from authorized activity. Those receipts build a readable history over time. That history provides evidence for reputation. The intended credit layer can eventually use this evidence to inform the conditions an agent may qualify for.</p>
     <Flow label="AME progression" steps={['Wallet','Identity','Receipts','Memory','Reputation','Credit']}/>
-    <p className={styles.note}>Identity and receipt primitives are implemented. General task-based reputation and reputation-adjusted credit are future layers. Lending access currently remains locked pending the $AME launch; mainnet signing is disabled.</p>
   </header>
   <nav className={styles.toc} aria-label="Documentation contents"><ul>{contents.map(([id,label])=><li key={id}><a href={`#${id}`}>{label}</a></li>)}</ul></nav>
 

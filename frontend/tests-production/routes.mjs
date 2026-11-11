@@ -106,3 +106,12 @@ test('docs explain the complete evidence and capital flows without inventing act
   for(const id of ['reputation-tasks','collateral','example','current-status'])assert.ok(html.includes(`id="${id}"`));
   for(const phrase of ['Task created','Agent performs task','Result verified','Receipt issued','History updated','Reputation recalculated','not a currently deployed generic task scheduler','Liquidity providers','Repayment + interest','AME does not create the lending capital.','Neither $AME collateral nor reputation-based reductions','illustrative future scenario','UNLOCK CREDIT PROFILE'])assert.ok(html.includes(phrase),phrase);
 });
+
+test('wallet status is contextual and docs opening has no obsolete global launch disclaimer',async()=>{
+  const html=await (await fetch(origin+'/docs')).text();
+  assert.ok(!html.includes('Identity and receipt primitives are implemented.'));
+  assert.ok(html.includes('Connected network:'));
+  assert.ok(html.includes('AME network:'));
+  assert.ok(!html.includes('WRONG NETWORK'));
+  assert.ok(!html.includes('Target:'));
+});

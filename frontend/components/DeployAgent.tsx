@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { useConfig,useConnection, useWriteContract } from 'wagmi';
+import { useConfig,useConnection, useWriteContract, useSwitchChain } from 'wagmi';
 import {getConnection} from 'wagmi/actions';
 import { isAddress,isAddressEqual, type Address, type Hash } from 'viem';
 import { useQuery,useQueryClient } from '@tanstack/react-query';
@@ -10,6 +10,7 @@ import { contracts, contractConfigurationIssue } from '@/lib/contracts';
 import { agentClient, agentLabel, readAgent } from '@/lib/agents';
 import { confirmMint, createMintController, transactionError, type MintPhase } from '@/lib/mint';
 import { ProductShell } from './ProductShell';
+import { walletErrorMessage } from '@/lib/wallet-errors';
 import {parseIdentityMetadata} from '@/lib/agent-metadata';
 
 type PendingMint = { hash: Hash; owner: Address };
@@ -19,6 +20,9 @@ const phaseLabels: Record<MintPhase, string> = { ready: 'READY', waiting: 'WAITI
 export function DeployAgent() {
   const { address, chainId, isConnected } = useConnection();
   const write = useWriteContract();
+  const switching = useSwitchChain();
+  const [networkError, setNetworkError] = useState('');
+  useEffect(() => { setNetworkError(''); }, [chainId, address]);
   const config=useConfig(),queries=useQueryClient();
   const controller = useRef(createMintController());
   const checking = useRef(false);
@@ -70,7 +74,7 @@ export function DeployAgent() {
   const explorer=developmentChain.blockExplorers?.default.url;
   const connected = mounted && isConnected && !!address;
   const wrongNetwork = connected && chainId !== developmentChain.id;
-  const busy = preparing || ['waiting', 'submitted', 'pending'].includes(phase);
+  const busy = switching.isPending || preparing || ['waiting', 'submitted', 'pending'].includes(phase);
 
   async function deploy() {
     if (!address || !connected || wrongNetwork || busy || pending || uncertainOwner || checking.current) return;
@@ -118,7 +122,9 @@ export function DeployAgent() {
     {message && <p className="product-copy" role="alert">{message}</p>}
     {profile.error && <p className="product-copy" role="alert">Mint confirmed; profile read failed: {profile.error.message}</p>}
     {!connected && <p className="product-copy">CONNECT WALLET using the header to continue.</p>}
-    {wrongNetwork && <p className="product-copy">Switch to {developmentChain.name} using the wallet controls in the header.</p>}
+    {wrongNetwork && <p className="product-copy">Identity minting requires {developmentChain.name} ({developmentChain.id}). This does not change the general AME network.</p>}
+    {wrongNetwork && <button className="wallet" disabled={busy} onClick={async () => { setNetworkError(''); try { await switching.mutateAsync({chainId:developmentChain.id}); } catch (error) { setNetworkError(walletErrorMessage(error)); } }}>{switching.isPending ? 'SWITCHING NETWORK...' : `SWITCH TO ${developmentChain.name.toUpperCase()}`}</button>}
+    {networkError && <p className="product-copy" role="alert">{networkError}</p>}
     {uncertainOwner&&<div className="product-copy"><p>Submission owner: {uncertainOwner}. Check wallet activity before another mint.</p><label htmlFor="mint-recovery">Transaction hash<input id="mint-recovery" value={recoveryHash} onChange={e=>setRecoveryHash(e.target.value)} placeholder="0x…"/></label><button className="wallet" disabled={busy} onClick={recover}>RECOVER TRANSACTION</button><label><input type="checkbox" checked={checkedWallet} onChange={e=>setCheckedWallet(e.target.checked)}/> I checked wallet activity and no mint was broadcast.</label><button className="wallet" disabled={!checkedWallet||busy} onClick={clearUncertain}>CLEAR UNKNOWN SUBMISSION</button></div>}
     <div className="product-actions">
       {minted !== null ? <><Link className="deploy flex items-center justify-between" href={`/agent/${minted}`}>VIEW AGENT <span>↗</span></Link><button className="wallet" onClick={newMint}>NEW MINT</button></> : <>
