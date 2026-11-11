@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { SiteHeader } from './SiteHeader';
-import { deploymentConfigurationIssue as contractConfigurationIssue } from '@/lib/contracts';
+import { contractConfigurationIssue } from '@/lib/identity-contracts';
 
 export function ProductShell({ children }: { children: React.ReactNode }) {
   return <><a className="skip-link" href="#product-main">Skip to content</a><SiteHeader />

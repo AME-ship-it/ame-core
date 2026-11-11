@@ -1,5 +1,5 @@
 import {createPublicClient,http,type Address} from 'viem';
-import {agentClient} from './agents.ts';
+import {agentClient} from './lending-client.ts';
 import {lendingABI} from './generated/lending.ts';
 import {lendingConfiguration} from './lending.ts';
 import {robinhoodMainnet,developmentChain} from './chains.ts';

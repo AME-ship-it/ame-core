@@ -1,3 +1,4 @@
+import { resolveIdentityNetwork } from './identity-network.ts';
 import { defineChain } from 'viem';
 import { resolveNetwork, validateRPC } from './environment.ts';
 
@@ -29,3 +30,7 @@ export const robinhoodMainnet = defineChain({
 });
 
 export const developmentChain = network === 'localhost' && localChain ? localChain : network === 'mainnet' ? robinhoodMainnet : robinhoodTestnet;
+
+// Identity has its own domain; legacy lending keeps developmentChain unchanged.
+export const identityNetwork = resolveIdentityNetwork(process.env.NEXT_PUBLIC_AME_IDENTITY_NETWORK, process.env.NODE_ENV === 'production', network);
+export const identityChain = identityNetwork === 'mainnet' ? robinhoodMainnet : identityNetwork === 'localhost' && localChain ? localChain : robinhoodTestnet;

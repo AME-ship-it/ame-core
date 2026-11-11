@@ -1,5 +1,5 @@
 import { isAddress, getAddress, zeroAddress, isAddressEqual, decodeFunctionData, type Address, type Hash, type PublicClient, type TransactionReceipt } from 'viem';
-import { developmentChain } from './chains.ts';
+import { identityChain as developmentChain } from './chains.ts';
 import { verifyDeployment, mintedAgentId } from './agents.ts';
 import { walletErrorMessage } from './wallet-errors.ts';
 import {identityMetadata,type AgentMetadataInput} from './agent-metadata.ts';
@@ -21,7 +21,7 @@ export function transactionError(error: unknown): { phase: MintPhase; message: s
   while (current && typeof current === 'object' && !seen.has(current)) {
     seen.add(current);
     const value = current as { name?: string; cause?: unknown; message?: string };
-    if(/InsufficientFunds/.test(value.name||'')||/insufficient funds/i.test(value.message||''))return {phase:'insufficient-funds',message:'INSUFFICIENT TESTNET GAS — Minting has no contract fee, but requires testnet ETH for gas.'};
+    if(/InsufficientFunds/.test(value.name||'')||/insufficient funds/i.test(value.message||''))return {phase:'insufficient-funds',message:'INSUFFICIENT GAS — Minting has no contract fee, but requires ETH on the identity network for gas.'};
     if(/ChainMismatch|AccountNotFound/.test(value.name||'')||/WALLET CHANGED/.test(value.message||''))return {phase:'wallet-changed',message:'WALLET CHANGED — Reconnect the intended owner on the configured network before retrying.'};
     if (/Reverted|ExecutionReverted/.test(value.name || '') || value.message === 'TRANSACTION REVERTED') return { phase: 'reverted', message: 'TRANSACTION REVERTED — No agent was minted by this transaction.' };
     if (/HttpRequest|Timeout|RpcRequest|Socket|TransactionReceiptNotFound/.test(value.name || '')) return { phase: 'rpc-failure', message: 'RPC FAILURE — Check the node connection. If submitted, recheck this transaction; do not mint again.' };

@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { execFileSync } from 'node:child_process';
 import { resolveNetwork, validateRPC } from '../lib/environment.ts';
 
-test('identity deployment selects testnet while local development keeps localhost', () => {
+test('legacy lending keeps testnet while local development keeps localhost', () => {
   assert.equal(resolveNetwork(undefined, true), 'testnet');
   assert.equal(resolveNetwork('', true), 'testnet');
   assert.equal(resolveNetwork(undefined, false), 'localhost');
@@ -12,9 +12,9 @@ test('identity deployment selects testnet while local development keeps localhos
 
 test('production wallet defaults to mainnet without redirecting identity contracts or adding localhost', () => {
   const env = { ...process.env, NODE_ENV: 'production', NEXT_PUBLIC_AME_NETWORK: 'testnet' };
-  const source = `const {createWeb3Config}=await import('./lib/web3.ts');const {developmentChain}=await import('./lib/chains.ts');const c=createWeb3Config();console.log(JSON.stringify({default:c.state.chainId,chains:c.chains.map(x=>x.id),identity:developmentChain.id}));`;
+  const source = `const {createWeb3Config}=await import('./lib/web3.ts');const {identityChain}=await import('./lib/chains.ts');const c=createWeb3Config();console.log(JSON.stringify({default:c.state.chainId,chains:c.chains.map(x=>x.id),identity:identityChain.id}));`;
   const result = JSON.parse(execFileSync(process.execPath, ['--experimental-strip-types','--input-type=module','-e',source], {cwd:new URL('../',import.meta.url),env,encoding:'utf8'}));
-  assert.deepEqual(result,{default:4663,chains:[4663,46630],identity:46630});
+  assert.deepEqual(result,{default:4663,chains:[4663,46630],identity:4663});
 });
 
 test('production rejects localhost and unknown network values', () => {

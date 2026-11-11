@@ -5,8 +5,8 @@ import { useConfig,useConnection, useWriteContract, useSwitchChain } from 'wagmi
 import {getConnection} from 'wagmi/actions';
 import { isAddress,isAddressEqual, type Address, type Hash } from 'viem';
 import { useQuery,useQueryClient } from '@tanstack/react-query';
-import { developmentChain } from '@/lib/chains';
-import { contracts, contractConfigurationIssue } from '@/lib/contracts';
+import { identityChain as developmentChain } from '@/lib/chains';
+import { contracts, contractConfigurationIssue } from '@/lib/identity-contracts';
 import { agentClient, agentLabel, readAgent } from '@/lib/agents';
 import { confirmMint, createMintController, transactionError, type MintPhase } from '@/lib/mint';
 import { ProductShell } from './ProductShell';
@@ -15,7 +15,7 @@ import {parseIdentityMetadata} from '@/lib/agent-metadata';
 
 type PendingMint = { hash: Hash; owner: Address };
 const storageKey = `ame:mint:${developmentChain.id}:${contracts.agent.address || 'unconfigured'}`;
-const phaseLabels: Record<MintPhase, string> = { ready: 'READY', waiting: 'WAITING FOR SIGNATURE', submitted: 'TRANSACTION SUBMITTED', pending: 'TRANSACTION PENDING', confirmed: 'TRANSACTION CONFIRMED', rejected: 'TRANSACTION REJECTED', reverted: 'TRANSACTION REVERTED', 'rpc-failure': 'RPC FAILURE', failed: 'UNKNOWN FAILURE','insufficient-funds':'INSUFFICIENT TESTNET GAS','wallet-changed':'WALLET CHANGED','submission-unknown':'SUBMISSION UNKNOWN' };
+const phaseLabels: Record<MintPhase, string> = { ready: 'READY', waiting: 'WAITING FOR SIGNATURE', submitted: 'TRANSACTION SUBMITTED', pending: 'TRANSACTION PENDING', confirmed: 'TRANSACTION CONFIRMED', rejected: 'TRANSACTION REJECTED', reverted: 'TRANSACTION REVERTED', 'rpc-failure': 'RPC FAILURE', failed: 'UNKNOWN FAILURE','insufficient-funds':'INSUFFICIENT GAS','wallet-changed':'WALLET CHANGED','submission-unknown':'SUBMISSION UNKNOWN' };
 
 export function DeployAgent() {
   const { address, chainId, isConnected } = useConnection();
@@ -77,7 +77,7 @@ export function DeployAgent() {
   const busy = switching.isPending || preparing || ['waiting', 'submitted', 'pending'].includes(phase);
 
   async function deploy() {
-    if (!address || !connected || wrongNetwork || busy || pending || uncertainOwner || checking.current) return;
+    if (contractConfigurationIssue || !address || !connected || wrongNetwork || busy || pending || uncertainOwner || checking.current) return;
     setPreparing(true); setPhase('ready'); setMessage('');
     try {
       const owner = address;
@@ -106,7 +106,7 @@ export function DeployAgent() {
   }
   function recover(){if(!uncertainOwner||!/^0x[0-9a-fA-F]{64}$/.test(recoveryHash.trim())){setMessage('Enter the transaction hash from your wallet activity.');return;}const record={owner:uncertainOwner,hash:recoveryHash.trim() as Hash};remember(record.hash,record.owner);void check(record);}
   function clearUncertain(){if(!checkedWallet||!uncertainOwner)return;try{localStorage.removeItem(`${storageKey}:uncertain`);}catch{return;}setUncertainOwner(null);setPhase('ready');setMessage('Wallet activity checked. No automatic resubmission was made.');setCheckedWallet(false);}
-  const status = contractConfigurationIssue ? 'CONTRACT NOT CONFIGURED' : !connected ? 'WALLET DISCONNECTED' : wrongNetwork ? 'WRONG NETWORK' : preparing && phase === 'ready' ? 'CHECKING CONTRACT' : phaseLabels[phase];
+  const status = contractConfigurationIssue ? 'IDENTITY UNAVAILABLE' : !connected ? 'WALLET DISCONNECTED' : wrongNetwork ? 'WRONG NETWORK' : preparing && phase === 'ready' ? 'CHECKING CONTRACT' : phaseLabels[phase];
   return <ProductShell><p className="eyebrow">// AGENT INITIALIZATION / {developmentChain.name.toUpperCase()}</p>
     <h1 className="product-title">{minted !== null ? `${agentLabel(minted)} REGISTERED` : 'DEPLOY AN AME_'} </h1>
     <p className="product-copy">{minted !== null ? 'Identity confirmed onchain. Autonomous execution is not enabled.' : 'Create an onchain identity. One transaction. Your AME ID is assigned by the contract.'}</p>
@@ -114,11 +114,13 @@ export function DeployAgent() {
       {minted===null&&<><div><dt><label htmlFor="agent-name">IDENTITY NAME</label></dt><dd><input id="agent-name" value={name} maxLength={64} disabled={busy||!!pending||!!uncertainOwner} onChange={e=>setName(e.target.value)} placeholder="AME Agent"/></dd></div><div><dt><label htmlFor="agent-description">DESCRIPTION</label></dt><dd><input id="agent-description" value={description} maxLength={500} disabled={busy||!!pending||!!uncertainOwner} onChange={e=>setDescription(e.target.value)} placeholder="Optional NFT identity description"/></dd></div></>}
       <div><dt>OWNER</dt><dd>{minted !== null ? profile.data?.owner || 'READING...' : mounted ? address || 'NOT CONNECTED' : 'NOT CONNECTED'}</dd></div>
       <div><dt>AGENT WALLET</dt><dd>{minted !== null ? profile.data?.wallet || 'READING...' : <><label className="sr-only" htmlFor="agent-wallet">Optional agent wallet address</label><input id="agent-wallet" value={wallet} disabled={busy || !!pending} onChange={event => setWallet(event.target.value)} placeholder="Optional — defaults to your wallet" autoComplete="off" spellCheck={false} /><small>When omitted, the connected owner wallet is assigned. Assignment does not prove control. The assigned wallet can issue core attestations; it receives no lending permission.</small></>}</dd></div>
+      <div><dt>IDENTITY NETWORK</dt><dd>{developmentChain.id} / {developmentChain.name}</dd></div>
       <div><dt>STATUS</dt><dd role="status" aria-live="polite">{status}</dd></div><div><dt>NETWORK</dt><dd>{mounted && isConnected ? `${chainId} / ${chainId === developmentChain.id ? developmentChain.name : 'WRONG NETWORK'}` : 'NOT CONNECTED'}</dd></div>
       {minted !== null && <><div><dt>REPUTATION</dt><dd>UNRATED</dd></div><div><dt>TASKS</dt><dd>NOT TRACKED</dd></div><div><dt>RECEIPTS</dt><dd>NOT LOADED</dd></div></>}
       {pending && <div><dt>TRANSACTION</dt><dd>{explorer?<a href={`${explorer}/tx/${pending.hash}`} target="_blank" rel="noopener noreferrer">{pending.hash} ↗</a>:pending.hash}</dd></div>}
       {metadata&&<><div><dt>METADATA NAME</dt><dd>{metadata.name??'NOT PROVIDED'}</dd></div><div><dt>DESCRIPTION</dt><dd>{metadata.description??metadata.issue??'NOT PROVIDED'}</dd></div><div><dt>METADATA POINTER</dt><dd className="metadata-pointer">{profile.data?.metadataURI}</dd></div></>}
     </dl>
+    {contractConfigurationIssue && <p className="product-copy" role="status">Identity creation is unavailable on {developmentChain.name}. A verified identity contract is not configured.</p>}
     {message && <p className="product-copy" role="alert">{message}</p>}
     {profile.error && <p className="product-copy" role="alert">Mint confirmed; profile read failed: {profile.error.message}</p>}
     {!connected && <p className="product-copy">CONNECT WALLET using the header to continue.</p>}
@@ -132,7 +134,7 @@ export function DeployAgent() {
         {pending && !busy && phase !== 'reverted' && <button className="wallet" onClick={() => void check(pending)}>RECHECK TRANSACTION</button>}
         {phase === 'reverted' && <button className="wallet" onClick={newMint}>START NEW ATTEMPT</button>}
       </>}
-    </div><p className="product-footnote">This mints an NFT identity, not an executable AI agent or financial permission. Mint fee: 0; testnet ETH gas is required. Metadata is inline JSON stored onchain and can be updated by the current NFT owner. Confirmation requires one block.</p>
+    </div><p className="product-footnote">This mints an NFT identity, not an executable AI agent or financial permission. Mint fee: 0; ETH gas on the selected network is required. Metadata is inline JSON stored onchain and can be updated by the current NFT owner. Confirmation requires one block.</p>
   </ProductShell>;
 }
 

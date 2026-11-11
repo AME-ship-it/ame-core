@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { zeroAddress } from 'viem';
 import { agentLabel, isMissingAgent, parseAgentId, readAgent } from '@/lib/agents';
-import { developmentChain } from '@/lib/chains';
-import { contracts, contractConfigurationIssue } from '@/lib/contracts';
+import { identityChain as developmentChain } from '@/lib/chains';
+import { contracts, contractConfigurationIssue } from '@/lib/identity-contracts';
 import { ProductShell } from './ProductShell';
 import {parseIdentityMetadata} from '@/lib/agent-metadata';
 

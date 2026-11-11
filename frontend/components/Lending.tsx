@@ -9,7 +9,7 @@ import { encodeFunctionData, erc20Abi, formatUnits, getAddress, parseEventLogs, 
 import {walletErrorMessage} from '@/lib/wallet-errors';
 import { ProductShell } from './ProductShell';
 import { developmentChain } from '@/lib/chains';
-import { agentClient } from '@/lib/agents';
+import { agentClient } from '@/lib/lending-client';
 import { lendingABI } from '@/lib/generated/lending';
 import { lendingConfiguration, readLendingMarket } from '@/lib/lending';
 import { positiveId } from '@/lib/lending-config';

@@ -1,5 +1,5 @@
 import { erc20Abi, getAddress, parseAbiItem, type Address } from 'viem';
-import { agentClient } from './agents.ts';
+import { agentClient } from './lending-client.ts';
 import { developmentChain } from './chains.ts';
 import { contracts } from './contracts.ts';
 import { lendingABI } from './generated/lending.ts';

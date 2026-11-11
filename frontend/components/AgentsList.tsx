@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useConnection } from 'wagmi';
 import { useQuery } from '@tanstack/react-query';
 import { agentLabel, readOwnedAgentIds } from '@/lib/agents';
-import { developmentChain } from '@/lib/chains';
-import { contracts, contractConfigurationIssue } from '@/lib/contracts';
+import { identityChain as developmentChain } from '@/lib/chains';
+import { contracts, contractConfigurationIssue } from '@/lib/identity-contracts';
 import { ProductShell } from './ProductShell';
 
 export function AgentsList() {

@@ -1,6 +1,6 @@
 import { createPublicClient, http, keccak256, parseEventLogs, isAddressEqual, zeroAddress, type PublicClient, type TransactionReceipt, type Address } from 'viem';
-import { developmentChain, network } from './chains.ts';
-import { contracts, contractConfigurationIssue } from './contracts.ts';
+import { identityChain as developmentChain, identityNetwork as network } from './chains.ts';
+import { contracts, contractConfigurationIssue } from './identity-contracts.ts';
 import { agentRuntimeBytecode } from './generated/agent.ts';
 import { readLogPages } from './log-ranges.ts';
 
