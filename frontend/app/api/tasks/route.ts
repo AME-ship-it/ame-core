@@ -20,14 +20,14 @@ async function handle(request:Request){
   if(action==='guide')return Response.json(await guidedTasks.prepare(input,origin));
   if(action==='grade')return Response.json(await guidedTasks.grade(input,origin));
   if(action==='identity-proof')return Response.json(await guidedTasks.identity(input,origin));
-  if(action==='record-guided'){const b=object(input,['ticket','answers','wallet']);const prepared=await guidedTasks.record({ticket:b.ticket,answers:b.answers},origin);return Response.json(await tasksService.start({...prepared,wallet:b.wallet},origin,rate));}
+  if(action==='record-guided'||action==='acceptance-guided'){const b=object(input,['ticket','answers','wallet']);const prepared=await guidedTasks.record({ticket:b.ticket,answers:b.answers},origin);return Response.json(await tasksService.start({...prepared,wallet:b.wallet},origin,rate,action==='acceptance-guided'));}
   if(action==='reference'){object(input,[]);return Response.json(await tasksService.reference());}
   if(action==='observe')return Response.json(await tasksService.observe(input));
   if(action==='inspect')return Response.json(await tasksService.inspect(input));
-  if(action==='start'){if(input.type!=='wallet')throw new TaskError('GUIDED_ANALYSIS_REQUIRED');return Response.json(await tasksService.start(input,origin,rate));}
-  if(action==='submit')return Response.json(await tasksService.submit(input,origin,rate));
+  if(action==='start'||action==='acceptance-start'){if(input.type!=='wallet')throw new TaskError('GUIDED_ANALYSIS_REQUIRED');return Response.json(await tasksService.start(input,origin,rate,action==='acceptance-start'));}
+  if(action==='submit'||action==='acceptance-submit')return Response.json(await tasksService.submit(input,origin,rate,action==='acceptance-submit'));
   throw new TaskError('INVALID_ACTION');
- }catch(error){return Response.json({error:error instanceof TaskError?error.message:'VERIFICATION_UNAVAILABLE',awardedXP:0},{status:error instanceof TaskError?error.status:503});}
+ }catch(error){if(!(error instanceof TaskError)){let cause=error as {name?:string;code?:unknown;cause?:unknown}|undefined;const categories=[];for(let i=0;cause&&i<4;i++,cause=cause.cause as typeof cause)categories.push({name:typeof cause.name==='string'?cause.name.slice(0,60):'Unknown',code:typeof cause.code==='number'?cause.code:null});console.warn(JSON.stringify({event:'ame_tasks_verification_failure',categories}));}return Response.json({error:error instanceof TaskError?error.message:'VERIFICATION_UNAVAILABLE',awardedXP:0},{status:error instanceof TaskError?error.status:503});}
 }
 export const GET=withApiMetrics('tasks',handle);
 export const POST=withApiMetrics('tasks',handle);

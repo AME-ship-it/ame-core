@@ -1,0 +1,4 @@
+import {fallback,http} from 'viem';
+import {robinhoodMainnet} from '../chains.ts';
+export function taskRpcUrls(env:Record<string,string|undefined>=process.env){const supplied=env.AME_TASKS_RPC_URLS;let urls:string[];try{urls=supplied?JSON.parse(supplied):[robinhoodMainnet.rpcUrls.default.http[0]];if(!Array.isArray(urls)||!urls.length||urls.length>2||urls.some(v=>{if(typeof v!=='string')return true;const u=new URL(v);return u.protocol!=='https:'||!!u.username||!!u.password||u.hostname==='localhost'||/^127\.|^10\.|^192\.168\.|^169\.254\./.test(u.hostname);}))throw Error();return [...new Set(urls)];}catch{throw new Error('Invalid server task RPC configuration');}}
+export function tasksTransport(env:Record<string,string|undefined>=process.env,fetchFn?:typeof fetch){return fallback(taskRpcUrls(env).map(url=>http(url,{timeout:4000,retryCount:1,retryDelay:250,...(fetchFn?{fetchFn}:{})})),{rank:false,retryCount:0});}

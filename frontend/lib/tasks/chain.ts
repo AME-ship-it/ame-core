@@ -1,5 +1,6 @@
+import {tasksTransport} from './rpc.ts';
 import {extendedSnapshot} from './extended.ts';
-import {createPublicClient,http,getAddress,keccak256,zeroAddress,type Address,type Hex} from 'viem';
+import {createPublicClient,getAddress,keccak256,zeroAddress,type Address,type Hex} from 'viem';
 import {agentABI,agentRuntimeBytecode} from '../generated/agent.ts';
 import {logRanges} from '../log-ranges.ts';
 import {robinhoodMainnet} from '../chains.ts';
@@ -8,7 +9,7 @@ export const REGISTRY='0x3E5D2c59fc968DAE8Fc58AB1B46F3b3eB03d969c' as const;
 export const DEPLOYMENT_BLOCK=112023846n;
 function freshHead(head:{timestamp:bigint}){const drift=Date.now()-Number(head.timestamp)*1000;if(drift>120000||drift< -1200000)throw new TaskError('RPC_HEAD_STALE_OR_CLOCK_SKEW',503);}
 export type Authority={owner:Address;assignedWallet:Address;epoch:string;blockNumber:string;blockHash:string;chainTime:number};
-const defaultClient=createPublicClient({chain:robinhoodMainnet,transport:http(undefined,{timeout:8000,retryCount:1})});
+const defaultClient=createPublicClient({chain:robinhoodMainnet,transport:tasksTransport()});
 export function createTasksChain(client=defaultClient){
  async function readSnapshot(type:TaskType,input:TaskSubmission):Promise<Record<string,string>>{
   if(await client.getChainId()!==4663)throw new TaskError('RPC_WRONG_NETWORK',503);
@@ -30,11 +31,12 @@ export function createTasksChain(client=defaultClient){
   const result={blockNumber:String(receipt.blockNumber),blockHash:receipt.blockHash,status:receipt.status,gasUsed:String(receipt.gasUsed),effectiveGasPriceWei:String(receipt.effectiveGasPrice),feeWei:String(receipt.gasUsed*receipt.effectiveGasPrice),logCount:String(logs.length),logsHash:contentHash(logs)};if(cached.size>=128){const oldest=cached.keys().next().value!;cached.delete(oldest);details.delete(oldest);}cached.set(input.target!,result);return result;
  }
 
+ const authorityPending=new Map<string,Promise<Authority>>();
  const details=new Map<string,{address:string;topics:readonly Hex[];data:Hex;logIndex:number}[]>();
  const cached=new Map<string,Record<string,string>>(),pending=new Map<string,Promise<Record<string,string>>>();
  return {
  eventLogs(target:string){return details.get(target)||[];},
- async authority(id:string):Promise<Authority>{
+ async authority(id:string):Promise<Authority>{const existing=authorityPending.get(id);if(existing)return existing;if(authorityPending.size>=32)throw new TaskError('RPC_CAPACITY_UNAVAILABLE',503);const work=(async():Promise<Authority>=>{
   if(await client.getChainId()!==4663)throw new TaskError('RPC_WRONG_NETWORK',503);
   const head=await client.getBlock();freshHead(head);if(head.number<DEPLOYMENT_BLOCK+2n)throw new TaskError('IDENTITY_NOT_CONFIRMED',409);
   const code=await client.getCode({address:REGISTRY,blockNumber:head.number});if(!code||keccak256(code)!==keccak256(agentRuntimeBytecode))throw new TaskError('IDENTITY_RUNTIME_MISMATCH',503);
@@ -48,7 +50,7 @@ export function createTasksChain(client=defaultClient){
   if(!latest||latest.blockNumber>head.number-2n)throw new TaskError('OWNERSHIP_CONFIRMATION_PENDING',409);
   if((await client.getBlock({blockNumber:latest.blockNumber})).hash!==latest.blockHash||(await client.getBlock({blockNumber:head.number})).hash!==head.hash)throw new TaskError('CHAIN_REORGANIZED',409);
   return {owner:getAddress(owner),assignedWallet:getAddress(assignedWallet),epoch:contentHash({chain:4663,registry:REGISTRY,id,transfer:{transactionHash:latest.transactionHash,logIndex:latest.logIndex,blockNumber:String(latest.blockNumber),blockHash:latest.blockHash}}),blockNumber:String(head.number),blockHash:head.hash,chainTime:Number(head.timestamp)*1000};
- },
+ })();authorityPending.set(id,work);void work.finally(()=>authorityPending.delete(id)).catch(()=>{});return work;},
  async signature(wallet:Address,message:string,signature:Hex){return client.verifyMessage({address:wallet,message,signature});},
  snapshot(type:TaskType,input:TaskSubmission){const key=contentHash({type,target:input.target??null,block:['research','classification','events','risk'].includes(type)?input.analysis?.blockNumber??null:null});const hit=pending.get(key);if(hit)return hit;if(pending.size>=32)throw new TaskError('RPC_CAPACITY_UNAVAILABLE',503);const work=readSnapshot(type,input);pending.set(key,work);void work.finally(()=>pending.delete(key)).catch(()=>{});return work;},
  async reference(){if(await client.getChainId()!==4663)throw new TaskError('RPC_WRONG_NETWORK',503);const block=await client.getBlock();freshHead(block);return {blockNumber:String(block.number-2n),chainId:4663};},
