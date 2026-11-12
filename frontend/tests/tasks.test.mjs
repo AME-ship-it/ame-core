@@ -25,7 +25,7 @@ function setup(){const store=new AtomicStore();let state={owner:owner.address,as
 const payload=(type='wallet',agentId='1',wallet=owner.address,target='0x1000000000000000000000000000000000000001')=>({agentId,wallet,type,submission:type==='wallet'?{}:{target:type==='research'?target:hash,analysis:type==='research'?research:transaction}});
 async function signed(env,p=payload(),signer=owner){const c=await env.service.start(p,origin,'client');const signature=await signer.signMessage({message:c.message});return {challengeId:c.challengeId,signature};}
 test('exactly three deterministic task rewards, strict schemas and canonical content hashes',()=>{
- assert.deepEqual(TASKS.map(t=>t.xp),[10,20,30]);assert.equal(contentHash({b:2,a:1}),contentHash({a:1,b:2}));assert.equal(canonical({block:1n}),'{'+'"block":"1"}');
+ assert.deepEqual(TASKS.map(t=>t.xp),[10,20,30,20,25,35]);assert.equal(contentHash({b:2,a:1}),contentHash({a:1,b:2}));assert.equal(canonical({block:1n}),'{'+'"block":"1"}');
  for(const v of [{target:'0x123',analysis:research},{target:payload('research').submission.target,analysis:{...research,xp:'999'}},{target:payload('research').submission.target,analysis:{...research,codeBytes:'-1'}}])assert.throws(()=>submission('research',v));assert.throws(()=>submission('wallet',{xp:10}));
 });
 test('writes fail closed without durable storage or explicit enablement; XP stays unavailable',async()=>{
@@ -67,7 +67,7 @@ test('ownership changes during verification reject awards before persistence',as
 });
 test('Redis REST adapter uses atomic same-slot Lua, expiring challenges and NX replay claims',async()=>{
  const requests=[];const fake=async(url,init)=>{const cmd=JSON.parse(init.body);requests.push(cmd);return Response.json({result:cmd[0]==='EVAL'?'OK':cmd[0]==='SET'?'OK':null});};const s=new RedisTaskStore('https://redis.example/','not-a-real-credential',fake);await s.putChallenge('id',{x:1});assert.deepEqual(requests[0].slice(-3),['NX','EX',300]);assert.equal(await s.claim('id'),true);
- const r={id:'id',registry:'0x1111111111111111111111111111111111111111',agentId:'1',epoch:'e',type:'wallet',status:'VERIFIED'};assert.equal(await s.finish(r,'resource'),'OK');const cmd=requests.at(-1);assert.equal(cmd[0],'EVAL');assert.equal(cmd[1],FINISH_LUA);assert.equal(cmd[2],5);assert.ok(cmd.slice(3,8).every(k=>k.startsWith('{ame-tasks-v1}:')));assert.match(FINISH_LUA,/DUPLICATE_EVIDENCE/);assert.match(FINISH_LUA,/HSET/);
+ const r={id:'id',registry:'0x1111111111111111111111111111111111111111',agentId:'1',epoch:'e',type:'wallet',status:'VERIFIED'};assert.equal(await s.finish(r,'resource'),'OK');const cmd=requests.at(-1);assert.equal(cmd[0],'EVAL');assert.equal(cmd[1],FINISH_LUA);assert.equal(cmd[2],6);assert.ok(cmd.slice(3,9).every(k=>k.startsWith('{ame-tasks-v1}:')));assert.match(FINISH_LUA,/DUPLICATE_EVIDENCE/);assert.match(FINISH_LUA,/HSET/);
  await assert.rejects(new RedisTaskStore('https://redis.example/','x',async()=>Response.json({error:'denied'})).claim('id'),/STORAGE_UNAVAILABLE/);
  assert.throws(()=>new RedisTaskStore('http://localhost/','x'));
 });

@@ -98,6 +98,6 @@ No private keys, wallet files, credentials, private RPC URLs, local environments
 
 Use `feature/*` branches, PRs and review as described in [Security and review](SECURITY.md). No repository-wide license has been selected; existing file-level notices are preserved.
 
-## AME Tasks V1
+## AME Tasks V2
 
-The `/tasks` terminal provides live mainnet contract research and transaction-analysis tools, wallet-authorized task verification, and profile history integration. Three task types define 10/20/30 Task XP (maximum 60 per ownership epoch). Production completion/XP writes remain explicitly disabled pending approved durable Redis storage and real-store concurrency validation. Evidence reads and analysis checks award no XP. Task XP grants no financial permissions and is separate from repayment reputation. See [Tasks V1 architecture, API and release gates](frontend/TASKS.md).
+The `/tasks` terminal provides live mainnet contract research and transaction-analysis tools, wallet-authorized task verification, and profile history integration. Six guided task categories define 10/20/30/20/25/35 Task XP (140 across the current policy). Versioned rewards preserve historical amounts; current ownership-epoch XP is separate from historical activity, with lifetime category locks against transfer farming. A dedicated free Redis store is configured and real-store concurrency/restart tests pass. Production XP writes remain disabled pending genuine wallet-signed completion acceptance. Evidence reads and analysis checks award no XP. Task XP grants no financial permissions and is separate from repayment reputation. See [Tasks V2 architecture, API and release gates](frontend/TASKS.md).

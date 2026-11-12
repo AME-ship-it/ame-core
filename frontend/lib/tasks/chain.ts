@@ -1,3 +1,4 @@
+import {extendedSnapshot} from './extended.ts';
 import {createPublicClient,http,getAddress,keccak256,zeroAddress,type Address,type Hex} from 'viem';
 import {agentABI,agentRuntimeBytecode} from '../generated/agent.ts';
 import {logRanges} from '../log-ranges.ts';
@@ -13,6 +14,7 @@ export function createTasksChain(client=defaultClient){
   if(await client.getChainId()!==4663)throw new TaskError('RPC_WRONG_NETWORK',503);
   const head=await client.getBlock();freshHead(head);if(head.number<2n)throw new TaskError('RPC_UNAVAILABLE',503);
   if(type==='wallet')return {};
+  if(['classification','events','risk'].includes(type))return extendedSnapshot(client,type,input,head,{snapshot:(t,i)=>readSnapshot(t,i),eventLogs:target=>details.get(target)||[]});
   if(type==='research'){
    const blockNumber=BigInt(input.analysis!.blockNumber);if(blockNumber>head.number-2n)throw new TaskError('SNAPSHOT_MUST_BE_RECENT_AND_CONFIRMED');
    const block=await client.getBlock({blockNumber});if(head.timestamp<block.timestamp||head.timestamp-block.timestamp>900n)throw new TaskError('SNAPSHOT_EXPIRED');const address=getAddress(input.target!);const [code,balance]=await Promise.all([client.getCode({address,blockNumber}),client.getBalance({address,blockNumber})]);if(!code||code==='0x')throw new TaskError('TARGET_HAS_NO_CONTRACT_CODE');
@@ -48,7 +50,7 @@ export function createTasksChain(client=defaultClient){
   return {owner:getAddress(owner),assignedWallet:getAddress(assignedWallet),epoch:contentHash({chain:4663,registry:REGISTRY,id,transfer:{transactionHash:latest.transactionHash,logIndex:latest.logIndex,blockNumber:String(latest.blockNumber),blockHash:latest.blockHash}}),blockNumber:String(head.number),blockHash:head.hash,chainTime:Number(head.timestamp)*1000};
  },
  async signature(wallet:Address,message:string,signature:Hex){return client.verifyMessage({address:wallet,message,signature});},
- snapshot(type:TaskType,input:TaskSubmission){const key=contentHash({type,target:input.target??null,block:type==='research'?input.analysis?.blockNumber??null:null});const hit=pending.get(key);if(hit)return hit;if(pending.size>=32)throw new TaskError('RPC_CAPACITY_UNAVAILABLE',503);const work=readSnapshot(type,input);pending.set(key,work);void work.finally(()=>pending.delete(key)).catch(()=>{});return work;},
+ snapshot(type:TaskType,input:TaskSubmission){const key=contentHash({type,target:input.target??null,block:['research','classification','events','risk'].includes(type)?input.analysis?.blockNumber??null:null});const hit=pending.get(key);if(hit)return hit;if(pending.size>=32)throw new TaskError('RPC_CAPACITY_UNAVAILABLE',503);const work=readSnapshot(type,input);pending.set(key,work);void work.finally(()=>pending.delete(key)).catch(()=>{});return work;},
  async reference(){if(await client.getChainId()!==4663)throw new TaskError('RPC_WRONG_NETWORK',503);const block=await client.getBlock();freshHead(block);return {blockNumber:String(block.number-2n),chainId:4663};},
 };
 }

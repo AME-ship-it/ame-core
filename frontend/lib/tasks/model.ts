@@ -1,6 +1,6 @@
 import {keccak256,toHex,isAddress,getAddress,zeroAddress} from 'viem';
-export const TASK_VERSION='ame-tasks-v1.0';
-export const TASKS=[{type:'wallet',title:'Identity Attestation',xp:10},{type:'research',title:'Onchain Research',xp:20},{type:'transaction',title:'Transaction Analysis',xp:30}] as const;
+export const TASK_VERSION='ame-tasks-v2.0';
+export const TASKS=[{type:'wallet',title:'Identity Attestation',xp:10},{type:'research',title:'Onchain Research',xp:20},{type:'transaction',title:'Transaction Analysis',xp:30},{type:'classification',title:'Contract Classification',xp:20},{type:'events',title:'Event Log Decoding',xp:25},{type:'risk',title:'Protocol Risk Assessment',xp:35}] as const;
 export type TaskType=typeof TASKS[number]['type'];
 export type TaskPhase='AVAILABLE'|'STARTED'|'SUBMITTED'|'VERIFYING'|'VERIFIED'|'REJECTED';
 export type TaskSubmission={target?:string;analysis?:Record<string,string>};
@@ -14,12 +14,16 @@ export function agentId(value:unknown):string{if(typeof value!=='string'||! /^[1
 export function walletAddress(value:unknown):`0x${string}`{if(typeof value!=='string'||!isAddress(value)||getAddress(value)===zeroAddress)throw new TaskError('INVALID_WALLET');return getAddress(value);}
 export function submission(type:TaskType,value:unknown):TaskSubmission{
  const v=object(value,['target','analysis']);if(type==='wallet'){if(Object.keys(v).length)throw new TaskError('WALLET_TASK_HAS_NO_ANALYSIS');return {};}
- if(typeof v.target!=='string')throw new TaskError('TARGET_REQUIRED');const target=type==='research'?walletAddress(v.target).toLowerCase():v.target.toLowerCase();if(type==='transaction'&&!/^0x[0-9a-f]{64}$/.test(target))throw new TaskError('INVALID_TRANSACTION_HASH');
+ if(typeof v.target!=='string')throw new TaskError('TARGET_REQUIRED');const target=['research','classification'].includes(type)?walletAddress(v.target).toLowerCase():v.target.toLowerCase();if(['transaction','events','risk'].includes(type)&&!/^0x[0-9a-f]{64}$/.test(target))throw new TaskError('INVALID_TRANSACTION_HASH');
+ if(['classification','events','risk'].includes(type)){const a=object(v.analysis,['blockNumber','blockHash','facts']);if(typeof a.blockNumber!=='string'||!/^\d{1,78}$/.test(a.blockNumber)||typeof a.blockHash!=='string'||!/^0x[0-9a-f]{64}$/.test(a.blockHash)||typeof a.facts!=='string'||a.facts.length>6000)throw new TaskError('COMPLETE_ANALYSIS_REQUIRED');return {target,analysis:a as Record<string,string>};}
  const fields=type==='research'?['blockNumber','blockHash','codeHash','codeBytes','balanceWei']:['blockNumber','blockHash','status','gasUsed','effectiveGasPriceWei','feeWei','logCount','logsHash'];const a=object(v.analysis,fields);if(fields.some(k=>typeof a[k]!=='string'||(a[k] as string).length>90)||Object.keys(a).length!==fields.length)throw new TaskError('COMPLETE_ANALYSIS_REQUIRED');
  for(const k of fields){const s=a[k] as string;if(k.endsWith('Hash')){if(!/^0x[0-9a-fA-F]{64}$/.test(s))throw new TaskError('INVALID_ANALYSIS_HASH');}else if(k==='status'){if(!['success','reverted'].includes(s))throw new TaskError('INVALID_TRANSACTION_STATUS');}else if(!/^(0|[1-9]\d{0,77})$/.test(s))throw new TaskError('INVALID_ANALYSIS_NUMBER');}
  return {target,analysis:Object.fromEntries(fields.map(k=>[k,(a[k] as string).toLowerCase()]))};
 }
-export function score(records:TaskRecord[]){const seen=new Set<string>();return records.reduce((sum,r)=>{if(r.status!=='VERIFIED'||seen.has(r.type))return sum;seen.add(r.type);return sum+(TASKS.find(t=>t.type===r.type)?.xp||0);},0);}
+export function score(records:TaskRecord[]){const seen=new Set<string>();return records.reduce((sum,r)=>{if(r.status!=='VERIFIED'||seen.has(r.type))return sum;seen.add(r.type);return sum+(Number.isSafeInteger(r.xp)&&r.xp>=0?r.xp:0);},0);}
 
 /** External executors must use the same wallet authorization and grading; V1 has no autonomous worker. */
 export interface TaskExecutor { mode:'user-assisted'; observe(type:Exclude<TaskType,'wallet'>,target:string):Promise<unknown>; start(agentId:string,wallet:string,type:TaskType,submission:TaskSubmission):Promise<{challengeId:string;message:string}>; submit(challengeId:string,signature:string):Promise<unknown>; }
+
+export const REWARD_POLICY={version:TASK_VERSION,rewards:Object.fromEntries(TASKS.map(t=>[t.type,t.xp])),epochCap:TASKS.reduce((n,t)=>n+t.xp,0)} as const;
+export function reputation(records:TaskRecord[],epoch:string){const verified=records.filter(r=>r.status==='VERIFIED'),current=verified.filter(r=>r.epoch===epoch),ordered=[...verified].sort((a,b)=>a.timestamp.localeCompare(b.timestamp)||a.id.localeCompare(b.id));let running=0;return {version:'task-index-v1',historicalXP:verified.reduce((n,r)=>n+r.xp,0),currentEpochXP:score(current),verifiedEvidence:new Set(verified.map(r=>r.evidenceId)).size,index:Math.round(new Set(current.map(r=>r.type)).size/TASKS.length*100),formula:'100 × distinct verified task categories in current ownership epoch / 6, rounded; activity coverage only',scoreHistory:ordered.map(r=>({id:r.id,at:r.timestamp,xp:r.xp,total:running+=r.xp,policy:r.version})),financialUseApproved:false as const};}

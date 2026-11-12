@@ -1,6 +1,6 @@
-# AME Tasks V1
+# AME Tasks V2
 
-Tasks V1 implements deterministic, user-assisted activity verification for the verified mainnet AMEAgent registry. It does not run an autonomous agent or affect lending, financial reputation, $AME permissions or contract state.
+Tasks V2 implements deterministic, user-assisted activity verification for the verified mainnet AMEAgent registry. It does not run an autonomous agent or affect lending, financial reputation, $AME permissions or contract state.
 
 ## Guided tester experience
 
@@ -32,7 +32,7 @@ At completion, authorization is read again. Claims from former ownership epochs 
 
 ## Persistence and evidence integrity
 
-Redis stores expiring challenges, single-use claims, immutable attempt records, ownership-epoch completion slots, global evidence reservations and the history index. One Lua operation checks reward/evidence uniqueness and writes record, history and reward together. All keys share a Redis cluster hash tag. Each type earns once per ownership epoch, capped at 60. Research targets and transaction hashes are single-reward resources across all agents/epochs; a new snapshot of the same target cannot farm XP. Repeated client requests cannot increment a score twice. Score is computed from server-verified unique task completions, not client numbers.
+Redis stores expiring challenges, single-use claims, immutable attempt records, ownership-epoch completion slots, global evidence reservations and the history index. One Lua operation checks reward/evidence uniqueness and writes record, history and reward together. All keys share a Redis cluster hash tag. V2 adds an atomic lifetime category lock per identity, preventing transfer-driven XP farming; new-policy maximum is 140 across six categories. Historical V1 records retain their recorded amounts. Research targets and transaction hashes are single-reward resources across all agents/epochs; a new snapshot of the same target cannot farm XP. Repeated client requests cannot increment a score twice. Score is computed from server-verified unique task completions, not client numbers.
 
 Evidence uses sorted canonical JSON and keccak256 content hashes, chain-aware resource keys, pinned block hashes and verification version `ame-tasks-v1.0`. Records include original structured analysis, reproducing source references, authorization block/hash, timestamps and lifecycle transitions: STARTED, SUBMITTED, VERIFYING, VERIFIED/REJECTED. Later reorganizations remain possible despite confirmation checks; records preserve issuance context and do not promise irreversible finality. No mainnet AMEReceipt transaction is issued or claimed.
 
@@ -67,3 +67,13 @@ This writes test records and must never point at production. Verify concurrent a
 ## Validation
 
 Run the existing frontend and contract suites, `tests/tasks.test.mjs`, TypeScript, production build and production route/API tests. Read-only mainnet tests verify research/transaction snapshots, invalid targets, and no writes. Desktop/mobile QA must check navigation, inputs, disabled-write state and evidence results. Actual MetaMask task signatures and production Redis durability are not verified until performed against configured storage. No financial transactions are needed.
+
+## V2 verification and persistence
+
+Classification (20 XP) uses ERC-165 validity probes plus ERC-721 advertised support; ERC-20 compatibility and proxy safety are not inferred. Events (25 XP) decode confirmed AMEAgent Transfer logs using the reviewed ABI and emitter runtime. Risk assessment (35 XP) pins allowlisted Morpho assets, LLTV, oracle code hash, supply, debt and utilization; questions concern threshold implications, never investment advice. Unsupported ABIs/markets fail closed.
+
+`task-index-v1` = round(100 × distinct verified current-epoch categories / 6). Historical XP sums immutable committed rewards; policy updates never reprice existing records. Index and XP are not financial reputation. `credit-review.ts` is an internal, read-only integration boundary with financial use explicitly disabled.
+
+A dedicated Upstash Free database was created with eviction off and no payment method. Production env credentials are encrypted and server-only. XP writes stay disabled until genuine authorized wallet completion acceptance succeeds. Free-tier quota exhaustion fails closed; no automatic paid upgrade is authorized.
+
+Run `tests-integration/tasks-v2-redis.mjs` with isolated test credentials. It uses a random hash-tag namespace, performs 72 concurrent fixture grants, verifies deduplication, transfer farming, epoch totals and fresh-client recovery, then deletes only its own fixture namespace. Fixture XP is not genuine agent activity.
