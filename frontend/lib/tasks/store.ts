@@ -1,6 +1,6 @@
 import type {WriteGrant} from './activation.ts';
 import {TaskError,type TaskRecord} from './model.ts';
-export interface TaskStore{activationOpen?(grant:WriteGrant):Promise<boolean>;clock?():Promise<number>;putChallenge(id:string,value:unknown):Promise<void>;getChallenge(id:string):Promise<unknown>;claim(id:string):Promise<boolean>;finish(record:TaskRecord,resource:string,grant?:WriteGrant):Promise<'OK'|'DUPLICATE_TASK'|'DUPLICATE_EVIDENCE'|'WRITE_SCOPE_EXPIRED'|'WRITE_SCOPE_EXHAUSTED'|'WRITE_SCOPE_CLOSED'>;history(identity:string,epoch:string):Promise<{history:TaskRecord[];completed:TaskRecord[]}>;limit(key:string):Promise<boolean>;}
+export interface TaskStore{putAcceptanceProof(id:string,value:unknown):Promise<void>;getAcceptanceProof(id:string):Promise<unknown>;activationOpen?(grant:WriteGrant):Promise<boolean>;clock?():Promise<number>;putChallenge(id:string,value:unknown):Promise<void>;getChallenge(id:string):Promise<unknown>;claim(id:string):Promise<boolean>;finish(record:TaskRecord,resource:string,grant?:WriteGrant):Promise<'OK'|'DUPLICATE_TASK'|'DUPLICATE_EVIDENCE'|'WRITE_SCOPE_EXPIRED'|'WRITE_SCOPE_EXHAUSTED'|'WRITE_SCOPE_CLOSED'>;history(identity:string,epoch:string):Promise<{history:TaskRecord[];completed:TaskRecord[]}>;limit(key:string):Promise<boolean>;}
 
 export const FINISH_LUA=`
 if ARGV[5]~='' then
@@ -25,6 +25,8 @@ export class RedisTaskStore implements TaskStore{
  async command(args:(string|number)[]):Promise<unknown>{const r=await this.request(this.url,{method:'POST',headers:{Authorization:`Bearer ${this.token}`,'content-type':'application/json'},body:JSON.stringify(args),signal:AbortSignal.timeout(5000),cache:'no-store'});if(!r.ok)throw new TaskError('STORAGE_UNAVAILABLE',503);const d=await r.json();if(d.error)throw new TaskError('STORAGE_UNAVAILABLE',503);return d.result;}
  async activationOpen(grant:WriteGrant){const [state,used]=await this.command(['MGET',this.prefix+'activation-state:'+grant.key,this.prefix+'activation:'+grant.key]) as [string|null,string|null];return state==='enabled'&&Number(used||0)<grant.limit;}
  async clock(){const t=await this.command(['TIME']) as [string,string];if(!Array.isArray(t)||t.length!==2||!/^\d+$/.test(t[0])||!/^\d+$/.test(t[1]))throw new TaskError('STORAGE_CLOCK_UNAVAILABLE',503);return Number(t[0])*1000+Math.floor(Number(t[1])/1000);}
+ async putAcceptanceProof(id:string,value:unknown){if(await this.command(['SET',this.prefix+'acceptance:'+id,JSON.stringify(value),'NX','EX',86400])!=='OK')throw new TaskError('ACCEPTANCE_STORAGE_UNAVAILABLE',503);}
+ async getAcceptanceProof(id:string){const v=await this.command(['GET',this.prefix+'acceptance:'+id]);if(typeof v!=='string')throw new TaskError('ACCEPTANCE_PROOF_NOT_FOUND',404);return JSON.parse(v);}
  async putChallenge(id:string,value:unknown){if(await this.command(['SET',this.prefix+'challenge:'+id,JSON.stringify(value),'NX','EX',300])!=='OK')throw new TaskError('CHALLENGE_UNAVAILABLE',503);}
  async getChallenge(id:string){const v=await this.command(['GET',this.prefix+'challenge:'+id]);if(typeof v!=='string')throw new TaskError('CHALLENGE_EXPIRED',409);return JSON.parse(v);}
  async claim(id:string){return await this.command(['SET',this.prefix+'used:'+id,'1','NX','EX',600])==='OK';}
