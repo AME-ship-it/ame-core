@@ -25,12 +25,12 @@ export function AgentProfile({ id }: { id: string }) {
           <div><dt>AGENT ID</dt><dd>{String(agent.id)}</dd></div><div><dt>OWNER</dt><dd>{agent.owner}</dd></div><div><dt>AGENT WALLET</dt><dd>{agent.wallet === zeroAddress ? 'UNASSIGNED' : agent.wallet}</dd></div>
           <div><dt>CREATED AT</dt><dd>{agent.createdAt === null ? 'EVENT UNAVAILABLE' : new Date(Number(agent.createdAt) * 1000).toISOString()}<small>Mint event block timestamp</small></dd></div>
           <div><dt>STATUS</dt><dd>{agent.status}<small>Derived from NFT existence; no runtime status is stored.</small></dd></div>
-          <div><dt>REPUTATION</dt><dd>UNRATED<small>No reputation engine implemented</small></dd></div>
-          <div><dt>TASKS COMPLETED</dt><dd>NOT TRACKED</dd></div><div><dt>TOTAL VOLUME</dt><dd>NOT TRACKED</dd></div><div><dt>EARNINGS</dt><dd>NOT TRACKED</dd></div>
+          <div><dt>FINANCIAL REPUTATION</dt><dd>UNRATED<small>Separate from verified task activity</small></dd></div>
+          <div><dt>TOTAL VOLUME</dt><dd>NOT TRACKED</dd></div><div><dt>EARNINGS</dt><dd>NOT TRACKED</dd></div>
           <div><dt>METADATA POINTER</dt><dd className="metadata-pointer">{agent.metadataURI}</dd></div>
           <div><dt>IDENTITY NAME</dt><dd>{metadata?.name??'NOT PROVIDED'}</dd></div><div><dt>DESCRIPTION</dt><dd>{metadata?.description??metadata?.issue??'NOT PROVIDED'}</dd></div>
           {agent.mintTransaction&&<div><dt>MINT TRANSACTION</dt><dd>{explorer?<a href={`${explorer}/tx/${agent.mintTransaction}`} target="_blank" rel="noopener noreferrer">{agent.mintTransaction} ↗</a>:agent.mintTransaction}</dd></div>}
-        </dl>{developmentChain.id===4663&&<AgentTaskHistory id={id}/>} {agent.historyIssue&&<p className="product-copy" role="status">{agent.historyIssue}</p>}<p className="product-copy">Ownership, wallet and metadata are contract reads. Metadata can be updated by the current NFT owner. The assigned agent wallet is not a custodial wallet, executable AI runtime or lending authorization. Financial and task metrics are not stored by this core.</p></>}
+        </dl>{developmentChain.id===4663&&<AgentTaskHistory id={id}/>} {agent.historyIssue&&<p className="product-copy" role="status">{agent.historyIssue}</p>}<p className="product-copy">Ownership, wallet and metadata are contract reads. Metadata can be updated by the current NFT owner. The assigned agent wallet is not a custodial wallet, executable AI runtime or lending authorization. The NFT core does not store financial metrics. Verified task activity is recorded separately in the activity history when production recording is enabled.</p></>}
       </>}
   </ProductShell>;
 }
