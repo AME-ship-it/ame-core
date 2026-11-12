@@ -19,7 +19,7 @@ After approved recording: read the immutable record and profile, refresh, retry 
 
 ## RPC reliability
 
-Task reads coalesce simultaneous authority reads without caching completed authority across requests. Each HTTPS provider gets at most one retry with a 4-second timeout and 250ms backoff. Optional server-only `AME_TASKS_RPC_URLS` is a JSON array of at most two approved HTTPS RPC URLs; fallback has no additional retry loop. Do not invent a provider or expose credentials. Every result still undergoes chain, runtime, freshness and canonical block checks. Sanitized failure categories are logged without URLs, signatures or RPC payloads.
+Task reads coalesce simultaneous authority reads without caching completed authority across requests. Read requests get at most two rounds across configured HTTPS providers, with a 4-second per-provider timeout and 250ms between rounds. Known transient HTTP/RPC faults, including historical-state unavailability, may retry once; reverts, invalid parameters and write methods do not. Optional server-only `AME_TASKS_RPC_URLS` is a JSON array of at most two approved HTTPS RPC URLs; fallback has no additional retry loop. Do not invent a provider or expose credentials. Every result still undergoes chain, runtime, freshness and canonical block checks. Sanitized failure categories are logged without URLs, signatures or RPC payloads.
 
 ## Release gates
 
