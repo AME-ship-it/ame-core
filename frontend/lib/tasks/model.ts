@@ -1,6 +1,6 @@
 import {keccak256,toHex,isAddress,getAddress,zeroAddress} from 'viem';
 export const TASK_VERSION='ame-tasks-v1.0';
-export const TASKS=[{type:'wallet',title:'Wallet Verification',xp:10},{type:'research',title:'Onchain Research',xp:20},{type:'transaction',title:'Transaction Analysis',xp:30}] as const;
+export const TASKS=[{type:'wallet',title:'Identity Attestation',xp:10},{type:'research',title:'Onchain Research',xp:20},{type:'transaction',title:'Transaction Analysis',xp:30}] as const;
 export type TaskType=typeof TASKS[number]['type'];
 export type TaskPhase='AVAILABLE'|'STARTED'|'SUBMITTED'|'VERIFYING'|'VERIFIED'|'REJECTED';
 export type TaskSubmission={target?:string;analysis?:Record<string,string>};

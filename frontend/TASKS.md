@@ -2,6 +2,16 @@
 
 Tasks V1 implements deterministic, user-assisted activity verification for the verified mainnet AMEAgent registry. It does not run an autonomous agent or affect lending, financial reputation, $AME permissions or contract state.
 
+## Guided tester experience
+
+The public terminal uses agent selection, readable chain properties, ordinary answer controls and server-side grading. No JSON editing is required. Contract research asks for an interpretation of runtime size and the limits of code evidence. Transaction analysis checks network-fee arithmetic and attribution. Fetching evidence never awards XP.
+
+Short-lived AES-256-GCM sealed sessions bind the site origin, chain evidence, agent ID, ownership epoch and expiry. Correct-answer keys are not sent to the browser. The server rechecks ownership, freshness and canonical chain evidence when grading. `AME_TASKS_GUIDE_SECRET` is a server-only 32-byte hex key; it must never be prefixed with NEXT_PUBLIC_. The secret is independent from database configuration and cannot enable XP.
+
+Identity attestation supports an expiring, purpose-bound read-only wallet signature without durable storage. It grants no session, completion, XP or permission; repeated verification is an idempotent proof check. Persistent completion still uses the existing single-use Redis challenge and reward controls. Raw research/transaction `start` requests are rejected at the public API; `record-guided` requires passing server-side grading before the existing authorized signing flow.
+
+Browser tests are in `tests-e2e/tasks-guided.mjs`, runnable through the supported browser harness without installing new dependencies. They select an actual NFT, analyze live evidence and submit ordinary inputs. Real wallet signing must be tested separately with the owner; the disconnected-wallet browser test does not certify MetaMask acceptance.
+
 ## Release gate
 
 Production XP and completion writes are disabled by explicit product instruction. No approved durable store is configured. `/tasks` provides live read-only contract/transaction evidence and analysis checking. It never treats these reads as completed tasks or awards XP. Profile XP/history reports unavailable, rather than fabricated zeroes, when storage is absent.
@@ -10,7 +20,7 @@ The backend includes a Redis REST adapter with atomic Lua allocation. Unit tests
 
 ## Tasks and authorization
 
-- Wallet Verification: 10 XP. Sign an expiring, single-use challenge as the current NFT owner or assigned wallet.
+- Identity Attestation (wallet verification): 10 XP. Sign an expiring, single-use challenge as the current NFT owner or assigned wallet.
 - Onchain Research: 20 XP. Submit the target contract plus exact block number/hash, runtime hash, code byte length and native balance in wei. At least two subsequent blocks, no older than 15 minutes.
 - Transaction Analysis: 30 XP. Submit a real confirmed transaction and exact block number/hash, status, execution gas used, effective gas price, gas fee in wei, log count and ordered raw-log digest. Blob transactions, receipts over 256 logs, or raw-log references over 16 KiB are explicitly unsupported. The reference reader shows actual ordered raw event logs and explorer links.
 

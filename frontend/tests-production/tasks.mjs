@@ -3,7 +3,8 @@ import {test} from 'node:test';
 const origin=process.env.AME_QA_ORIGIN||'http://127.0.0.1:3000';
 const post=(body,extra={})=>fetch(origin+'/api/tasks',{method:'POST',headers:{'content-type':'application/json',...extra},body:JSON.stringify(body)});
 test('Tasks V1 route is discoverable, honest about disabled persistence and contains exactly three tasks',async()=>{
- const r=await fetch(origin+'/tasks');assert.equal(r.status,200);const html=await r.text();for(const text of ['Evidence becomes history.','Wallet Verification','Onchain Research','Transaction Analysis','XP recording is disabled.','SIGN &amp; SUBMIT TASK'])assert.ok(html.includes(text),text);const taskLink=[...html.matchAll(/<a\b([^>]*)>/g)].find(m=>m[1].includes('href="/tasks"'));assert.ok(taskLink);assert.match(taskLink[1],/aria-current="page"/);
+ const r=await fetch(origin+'/tasks');assert.equal(r.status,200);const html=await r.text();for(const text of ['Investigate. Understand. Verify.','Identity Attestation','Onchain Research','Transaction Analysis','Completion recording and XP rewards are currently disabled.','Analyze Contract'])assert.ok(html.includes(text),text);const taskLink=[...html.matchAll(/<a\b([^>]*)>/g)].find(m=>m[1].includes('href="/tasks"'));assert.ok(taskLink);assert.match(taskLink[1],/aria-current="page"/);
+ assert.ok(!html.includes('<textarea'),'Tasks must not require JSON editing');
  const api=await fetch(origin+'/api/tasks');assert.equal(api.status,200);const d=await api.json();assert.equal(d.writesEnabled,false);assert.equal(d.persistence,'not-configured');assert.deepEqual(d.tasks.map(t=>t.xp),[10,20,30]);assert.match(api.headers.get('cache-control'),/no-store/);assert.match(api.headers.get('server-timing'),/app;dur=/);
 });
 test('public Tasks API blocks score writes, replay payloads, unknown inputs and cross-origin requests',async()=>{

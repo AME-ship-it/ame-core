@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {test} from 'node:test';
+const origin=process.env.AME_QA_ORIGIN||'http://127.0.0.1:3000',ready=process.env.AME_QA_GUIDED_READY==='1';
+const post=async body=>{const response=await fetch(origin+'/api/tasks',{method:'POST',headers:{'content-type':'application/json',origin},body:JSON.stringify(body)});return {response,data:await response.json()};};
+test('guided public research grades ordinary answers against real evidence without awarding XP',{skip:!ready},async()=>{
+ const prepared=await post({action:'guide',agentId:'1',type:'research',target:'0x3E5D2c59fc968DAE8Fc58AB1B46F3b3eB03d969c'});assert.equal(prepared.response.status,200);const g=prepared.data;assert.ok(!g.answers);assert.ok(!g.snapshot);const bytes=BigInt(g.properties.find(p=>p.label==='Runtime size').value.replace(/[^0-9]/g,''));const conclusion=g.questions.find(q=>q.id==='conclusion').options.find(o=>o.label==='It confirms deployed code at this snapshot, not contract safety.').id;const graded=await post({action:'grade',ticket:g.ticket,answers:{blocks:String((bytes+1023n)/1024n),conclusion}});assert.equal(graded.response.status,200);assert.equal(graded.data.verified,true);assert.equal(graded.data.recorded,false);assert.equal(graded.data.xpAwarded,0);
+ const wrong=await post({action:'grade',ticket:g.ticket,answers:{blocks:'0',conclusion}});assert.equal(wrong.data.verified,false);const record=await post({action:'record-guided',ticket:g.ticket,answers:{blocks:String((bytes+1023n)/1024n),conclusion},wallet:'0xB8e4D5f2Bb9ca611791b8f2655352A516630f07D'});assert.equal(record.response.status,503);assert.equal(record.data.awardedXP,0);
+});
+test('public raw research starts cannot bypass guided grading',async()=>{
+ const r=await post({action:'start',agentId:'1',wallet:'0xB8e4D5f2Bb9ca611791b8f2655352A516630f07D',type:'research',submission:{}});assert.equal(r.response.status,400);assert.equal(r.data.error,'GUIDED_ANALYSIS_REQUIRED');
+});
+test('identity inspection exposes no fake signature or task completion',{skip:!ready},async()=>{
+ const r=await post({action:'guide',agentId:'1',type:'wallet'});assert.equal(r.response.status,200);assert.equal(r.data.walletAuthorized,false);assert.ok(!r.data.signatureMessage);assert.ok(r.data.properties.some(p=>p.label==='Owner'));const fake=await post({action:'identity-proof',ticket:r.data.ticket,signature:'0x'+'0'.repeat(130)});assert.equal(fake.response.status,403);
+});

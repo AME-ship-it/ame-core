@@ -1,4 +1,5 @@
 import {taskRequestOrigin} from '@/lib/tasks/origin';
+import {guidedTasks} from '@/lib/tasks/guided';
 import {tasksService} from '@/lib/tasks/service';
 import {TaskError,contentHash,object} from '@/lib/tasks/model';
 import {allowRequest,boundedJSON,withApiMetrics} from '@/lib/server/api-guard';
@@ -14,12 +15,16 @@ async function handle(request:Request){
   const origin=taskRequestOrigin(request);
   if(!request.headers.get('content-type')?.startsWith('application/json'))throw new TaskError('JSON_REQUIRED');
   let raw:unknown;try{raw=await boundedJSON(request,12000);}catch(error){throw new TaskError(error instanceof Error&&error.message==='BODY_TOO_LARGE'?'BODY_TOO_LARGE':'INVALID_JSON',error instanceof Error&&error.message==='BODY_TOO_LARGE'?413:400);}
-  const body=object(raw,['action','agentId','wallet','type','submission','challengeId','signature','target']);const {action,...input}=body;
+  const body=object(raw,['action','agentId','wallet','type','submission','challengeId','signature','target','ticket','answers']);const {action,...input}=body;
   const ip=process.env.VERCEL==='1'?request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim()||'unknown':'local';const rate=contentHash(ip);
+  if(action==='guide')return Response.json(await guidedTasks.prepare(input,origin));
+  if(action==='grade')return Response.json(await guidedTasks.grade(input,origin));
+  if(action==='identity-proof')return Response.json(await guidedTasks.identity(input,origin));
+  if(action==='record-guided'){const b=object(input,['ticket','answers','wallet']);const prepared=await guidedTasks.record({ticket:b.ticket,answers:b.answers},origin);return Response.json(await tasksService.start({...prepared,wallet:b.wallet},origin,rate));}
   if(action==='reference'){object(input,[]);return Response.json(await tasksService.reference());}
   if(action==='observe')return Response.json(await tasksService.observe(input));
   if(action==='inspect')return Response.json(await tasksService.inspect(input));
-  if(action==='start')return Response.json(await tasksService.start(input,origin,rate));
+  if(action==='start'){if(input.type!=='wallet')throw new TaskError('GUIDED_ANALYSIS_REQUIRED');return Response.json(await tasksService.start(input,origin,rate));}
   if(action==='submit')return Response.json(await tasksService.submit(input,origin,rate));
   throw new TaskError('INVALID_ACTION');
  }catch(error){return Response.json({error:error instanceof TaskError?error.message:'VERIFICATION_UNAVAILABLE',awardedXP:0},{status:error instanceof TaskError?error.status:503});}

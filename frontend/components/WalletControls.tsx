@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useId } from 'react';
 import { useConnect, useConnection, useConnectors, useDisconnect, useSwitchChain, type Connector } from 'wagmi';
 import { robinhoodMainnet } from '@/lib/chains';
 import { walletNetworkStatus } from '@/lib/wallet-network';
@@ -8,6 +8,7 @@ import { walletErrorMessage } from '@/lib/wallet-errors';
 import {TokenBalance} from './TokenBalance';
 
 export function WalletControls() {
+  const walletTitleId=useId();
   const { address, chainId, isConnected, isConnecting, isReconnecting } = useConnection();
   const connectors = useConnectors();
   const connection = useConnect();
@@ -72,8 +73,8 @@ export function WalletControls() {
       </button>
       <button className="wallet" disabled={mounted && busy} aria-busy={mounted && busy} onClick={openDialog}>{buttonLabel} <span>↗</span></button>
     </div>
-    <dialog ref={dialog} aria-labelledby="wallet-title" onClose={()=>setOpen(false)} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
-      <div><p className="eyebrow">// AME WEB3 CORE</p><h2 id="wallet-title">{connected ? 'WALLET / CONNECTED' : 'WALLET / CONNECT'}</h2>
+    <dialog ref={dialog} aria-labelledby={walletTitleId} onClose={()=>setOpen(false)} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
+      <div><p className="eyebrow">// AME WEB3 CORE</p><h2 id={walletTitleId}>{connected ? 'WALLET / CONNECTED' : 'WALLET / CONNECT'}</h2>
         <p className="wallet-detail">{connected ? address : 'Connect an injected wallet. MetaMask is supported on desktop and in its mobile browser.'}</p>
         <p>Connected network: {networkStatus.label}<br />AME network: {robinhoodMainnet.name} · {robinhoodMainnet.id}</p>
         {open&&connected&&address&&<TokenBalance wallet={address} chainId={chainId}/>}
