@@ -17,6 +17,7 @@ export function SiteHeader() {
     <nav className={`nav flex items-center ${styles.links}`} aria-label="Main navigation">
       <Link href="/nfts" aria-current={active('/nfts')}>NFT</Link>
       <Link href="/tasks" aria-current={active('/tasks')}>Tasks</Link>
+      <Link href="/passport" aria-current={active('/passport')}>Passport</Link>
       <Link href="/protocol" aria-current={active('/protocol')}>Protocol</Link>
       <Link href="/lending" aria-current={active('/lending')}>Lending</Link>
       <Link href="/docs" aria-current={active('/docs')}>Docs</Link>

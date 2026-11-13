@@ -21,7 +21,7 @@ export function AgentProfile({ id }: { id: string }) {
       : <><h1 className="product-title">{agentLabel(id)}<span className="caret">_</span></h1>
         {query.isPending && !contractConfigurationIssue && <p role="status" className="product-copy">READING ONCHAIN STATE...</p>}
         {query.error && <div role="alert"><p className="product-copy">{query.error.message}</p><button className="wallet" onClick={() => void query.refetch()}>RETRY READ</button></div>}
-        {agent && <><p className="product-copy">REGISTERED ONCHAIN / No autonomous runtime is connected.</p><dl className="terminal-data">
+        {agent && <><p className="product-copy"><Link className="text-link" href={`/passport/${id}`}>View public Passport ↗</Link></p><p className="product-copy">REGISTERED ONCHAIN / No autonomous runtime is connected.</p><dl className="terminal-data">
           <div><dt>AGENT ID</dt><dd>{String(agent.id)}</dd></div><div><dt>OWNER</dt><dd>{agent.owner}</dd></div><div><dt>AGENT WALLET</dt><dd>{agent.wallet === zeroAddress ? 'UNASSIGNED' : agent.wallet}</dd></div>
           <div><dt>CREATED AT</dt><dd>{agent.createdAt === null ? 'EVENT UNAVAILABLE' : new Date(Number(agent.createdAt) * 1000).toISOString()}<small>Mint event block timestamp</small></dd></div>
           <div><dt>STATUS</dt><dd>{agent.status}<small>Derived from NFT existence; no runtime status is stored.</small></dd></div>

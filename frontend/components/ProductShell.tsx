@@ -3,9 +3,9 @@ import Link from 'next/link';
 import { SiteHeader } from './SiteHeader';
 import { contractConfigurationIssue } from '@/lib/identity-contracts';
 
-export function ProductShell({ children }: { children: React.ReactNode }) {
+export function ProductShell({ children, showContractStatus=true }: { children: React.ReactNode; showContractStatus?:boolean }) {
   return <><a className="skip-link" href="#product-main">Skip to content</a><SiteHeader />
-    <main id="product-main" className="product-main">{contractConfigurationIssue && <p className="product-copy" role="status">{contractConfigurationIssue}</p>}{children}</main>
+    <main id="product-main" className="product-main">{showContractStatus && contractConfigurationIssue && <p className="product-copy" role="status">{contractConfigurationIssue}</p>}{children}</main>
     <footer className="site-footer flex justify-between"><Link href="/" className="footer-brand">ame.</Link><Link href="/agents">Your agents ↗</Link><Link href="/lending">Lending ↗</Link><span>ONCHAIN IDENTITY</span></footer></>;
 }
 

@@ -11,3 +11,6 @@
 .copyStatus:empty{display:none}
 
 @media(max-width:720px){nav.links{gap:clamp(10px,2.5vw,20px)}}
+
+nav.links{flex-wrap:wrap;min-width:0;column-gap:clamp(12px,1.5vw,24px);row-gap:4px}
+@media(max-width:720px){nav.links{justify-content:center;column-gap:clamp(10px,2.5vw,20px);row-gap:2px}}

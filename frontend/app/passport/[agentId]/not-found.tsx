@@ -1,0 +1,2 @@
+import Link from 'next/link';import {ProductShell} from '@/components/ProductShell';
+export default function NotFound(){return <ProductShell showContractStatus={false}><p className="eyebrow">AME PASSPORT / ROBINHOOD MAINNET</p><h1 className="product-title">PASSPORT NOT FOUND_</h1><p className="product-copy">This ID does not identify an existing AME NFT on the mainnet identity registry.</p><Link className="wallet" href="/passport">Find a Passport ↗</Link></ProductShell>;}
