@@ -1,0 +1,2 @@
+import {ProductShell} from '@/components/ProductShell';
+export default function Loading(){return <ProductShell showContractStatus={false}><p className="eyebrow">AME PASSPORT / ROBINHOOD MAINNET</p><h1 className="product-title">Reading Passport…</h1><p className="product-copy" role="status" aria-live="polite">Checking onchain identity and persistent task activity. No metrics are claimed until verification completes.</p></ProductShell>;}
